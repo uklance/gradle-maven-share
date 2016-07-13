@@ -28,10 +28,14 @@ public class ResolvedPom {
 		return model.getArtifactId();
 	}
 	
+	public Model getModel() {
+		return model;
+	}
+	
 	public String getGroupId() {
 		ResolvedPomVisitor<String> visitor = new ResolvedPomVisitor<String>() {
 			public String visit(ResolvedPom pom) {
-				return pom.getGroupId();
+				return pom.getModel().getGroupId();
 			}
 		};
 		return visitHierarchy(visitor);
@@ -40,7 +44,7 @@ public class ResolvedPom {
 	public String getVersion() {
 		ResolvedPomVisitor<String> visitor = new ResolvedPomVisitor<String>() {
 			public String visit(ResolvedPom pom) {
-				return pom.getVersion();
+				return pom.getModel().getVersion();
 			}
 		};
 		return visitHierarchy(visitor);

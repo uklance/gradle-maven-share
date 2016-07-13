@@ -41,7 +41,7 @@ public class PomResolver {
 			}
 			ResolvedPom parent = cache.getResolvedPom(rawParent.getGroupId(), rawParent.getArtifactId(), rawParent.getVersion());
 			if (parent == null) {
-				if (pomFile != null && rawParent.getRelativePath() == null) {
+				if (pomFile != null && rawParent.getRelativePath() != null) {
 					File parentPomFile = new File(pomFile.getParentFile(), rawParent.getRelativePath());
 					if (!parentPomFile.isFile()) {
 						parentPomFile = new File(parentPomFile, "pom.xml");
@@ -54,7 +54,6 @@ public class PomResolver {
 						parent = resolvePom(parentIn, null, cache, pomSource);
 					}
 				}
-				cache.addResolvedPom(parent);
 			}
 			return parent;
 		}

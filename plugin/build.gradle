@@ -2,4 +2,6 @@ apply plugin: 'java'
 
 dependencies {
 	compile 'org.apache.maven:maven-model:3.3.9'
+	testCompile 'junit:junit:4.12'
+	testCompile 'org.mockito:mockito-all:1.10.19'
 }
