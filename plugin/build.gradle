@@ -1,7 +1,20 @@
-apply plugin: 'java'
+plugins {
+	id 'java'
+	id 'jacoco'
+	id 'com.github.kt3k.coveralls' version '2.6.3'
+	id 'nebula.javadoc-jar' version '4.4.4'
+	id 'nebula.source-jar' version '4.4.4'
+}
 
 dependencies {
 	compile 'org.apache.maven:maven-model:3.3.9'
 	testCompile 'junit:junit:4.12'
 	testCompile 'org.mockito:mockito-all:1.10.19'
+}
+
+jacocoTestReport {
+	reports {
+		xml.enabled = true
+		html.enabled = true
+	}
 }

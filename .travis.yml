@@ -1,0 +1,10 @@
+language: java
+
+jdk:
+- oraclejdk8
+
+env:
+- CI=true
+
+after_success:
+- ./gradlew jacocoTestReport coveralls
