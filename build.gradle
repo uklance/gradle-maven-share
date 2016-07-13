@@ -1,0 +1,7 @@
+subprojects {
+	group = 'com.lazan'
+	version = '0.1-SNAPSHOT'
+	repositories {
+		mavenCentral()
+	}
+}

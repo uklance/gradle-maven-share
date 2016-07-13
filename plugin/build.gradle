@@ -1,0 +1,5 @@
+apply plugin: 'java'
+
+dependencies {
+	compile 'org.apache.maven:maven-model:3.3.9'
+}
