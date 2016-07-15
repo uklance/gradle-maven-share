@@ -27,7 +27,7 @@ public class PomResolverTest {
 		File implFile = getFile("maven-example-1/impl/pom.xml");
 
 		PomResolveCache cache = new PomResolveCache();
-		ResolvedPom implPom = resolver.resolvePom(implFile, cache, null);
+		ResolvedPom implPom = resolver.resolvePom(implFile, cache);
 		
 		assertEquals("1.0-SNAPSHOT", implPom.getVersion());
 		assertEquals("impl", implPom.getArtifactId());
@@ -38,7 +38,7 @@ public class PomResolverTest {
 		assertEquals("com.foo:impl:1.0-SNAPSHOT", implPom.getProperty("gav"));
 		
 		File interfaceFile = getFile("maven-example-1/interface/pom.xml");
-		ResolvedPom interfacePom = resolver.resolvePom(interfaceFile, cache, null);
+		ResolvedPom interfacePom = resolver.resolvePom(interfaceFile, cache);
 		assertEquals("1.0-SNAPSHOT", interfacePom.getVersion());
 		assertEquals("interface", interfacePom.getArtifactId());
 		assertEquals("com.foo", interfacePom.getGroupId());
@@ -48,7 +48,7 @@ public class PomResolverTest {
 	public void testResolveDependencies() {
 		File implFile = getFile("maven-example-1/impl/pom.xml");
 		PomResolveCache cache = new PomResolveCache();
-		ResolvedPom implPom = resolver.resolvePom(implFile, cache, null);
+		ResolvedPom implPom = resolver.resolvePom(implFile, cache);
 		assertDependencies(implPom.getDependencies(), "junit:junit:4.12:test");
 	}
 
@@ -68,5 +68,4 @@ public class PomResolverTest {
 		assertNotNull(url);
 		return new File(url.getFile());
 	}
-
 }

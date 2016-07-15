@@ -10,10 +10,22 @@ import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 
 public class PomResolver {
 	private MavenXpp3Reader mavenReader = new MavenXpp3Reader();
+	
+	private static PomSource DEFAULT_POM_SOURCE = new PomSource() {
+		@Override
+		public InputStream getPom(String group, String artifact, String version) {
+			throw new RuntimeException(
+					String.format("PomSource not configured, cannot get pom for %s:%s:%s", group, artifact, version));
+		}
+	};
 
+	public ResolvedPom resolvePom(File pomFile, PomResolveCache cache) {
+		return resolvePom(pomFile, cache, DEFAULT_POM_SOURCE);
+	}
+	
 	public ResolvedPom resolvePom(File pomFile, PomResolveCache cache, PomSource pomSource) {
 		try (InputStream in = new FileInputStream(pomFile)) {
-			return resolvePom(in, pomFile, cache, pomSource);
+			return resolvePom(in, pomFile, cache, pomSource == null ? DEFAULT_POM_SOURCE : pomSource);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
