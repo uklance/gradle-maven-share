@@ -14,4 +14,11 @@
 		<override1>overrideOneImpl</override1>
 		<gav>${project.groupId}:${project.artifactId}:${project.version}</gav>
 	</properties>
+	
+	<dependencies>
+		<dependency>
+		    <groupId>junit</groupId>
+		    <artifactId>junit</artifactId>
+		</dependency>
+	</dependencies>
 </project>

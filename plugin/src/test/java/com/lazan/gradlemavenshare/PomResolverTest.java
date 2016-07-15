@@ -5,7 +5,12 @@ import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
+import org.apache.maven.model.Dependency;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -37,6 +42,25 @@ public class PomResolverTest {
 		assertEquals("1.0-SNAPSHOT", interfacePom.getVersion());
 		assertEquals("interface", interfacePom.getArtifactId());
 		assertEquals("com.foo", interfacePom.getGroupId());
+	}
+	
+	@Test
+	public void testResolveDependencies() {
+		File implFile = getFile("maven-example-1/impl/pom.xml");
+		PomResolveCache cache = new PomResolveCache();
+		ResolvedPom implPom = resolver.resolvePom(implFile, cache, null);
+		assertDependencies(implPom.getDependencies(), "junit:junit:4.12:test");
+	}
+
+	private void assertDependencies(List<Dependency> dependencies, String... expected) {
+		List<String> actuals = new ArrayList<String>();
+		for (Dependency dep : dependencies) {
+			actuals.add(String.format("%s:%s:%s:%s", dep.getGroupId(), dep.getArtifactId(), dep.getVersion(), dep.getScope()));
+		}
+		List<String> expecteds = Arrays.asList(expected);
+		Collections.sort(actuals);
+		Collections.sort(expecteds);
+		assertEquals(expecteds, actuals);
 	}
 
 	private File getFile(String path) {

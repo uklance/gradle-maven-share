@@ -1,13 +1,17 @@
 package com.lazan.gradlemavenshare;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.maven.model.Dependency;
+import org.apache.maven.model.Exclusion;
 import org.apache.maven.model.Model;
 
 public class ResolvedPom {
@@ -23,8 +27,72 @@ public class ResolvedPom {
 		this.model = model;
 		this.properties = Collections.unmodifiableMap(resolveProperties());
 	}
+	
+	public List<Dependency> getDependencies() {
+		if (model.getDependencies() == null || model.getDependencies().isEmpty()) {
+			return Collections.emptyList();
+		}
+		Map<String, Dependency> managementMap = new LinkedHashMap<>();
+		ResolvedPomVisitor<Void> visitor = new ResolvedPomVisitor<Void>() {
+			@Override
+			public Void visit(ResolvedPom pom) {
+				if (pom.getModel().getDependencyManagement() != null) {
+					for (Dependency rawDep : pom.getModel().getDependencyManagement().getDependencies()) {
+						Dependency dep = resolve(rawDep);
+						String key = String.format("%s:%s", dep.getGroupId(), dep.getArtifactId());
+						if (!managementMap.containsKey(key)) {
+							managementMap.put(key, dep);
+						}
+					}
+				}
+				return null;
+			}
+		};
+		visitHierarchy(visitor);
+		
+		List<Dependency> dependencies = new ArrayList<>(model.getDependencies().size());
+		for (Dependency rawDep : model.getDependencies()) {
+			Dependency dep = resolve(rawDep);
+			String key = String.format("%s:%s", dep.getGroupId(), dep.getArtifactId());
+			Dependency managedDep = managementMap.get(key);
+			if (managedDep != null) {
+				if (dep.getVersion() == null) {
+					dep.setVersion(managedDep.getVersion());
+				}
+				if (dep.getScope() == null) {
+					dep.setScope(managedDep.getScope());
+				}
+			}
+			dependencies.add(dep);
+		}
+		return Collections.unmodifiableList(dependencies);
+	}
+	
+	public Dependency resolve(Dependency rawDep) {
+		Dependency dep = new Dependency();
+		dep.setGroupId(substituteProperties(rawDep.getGroupId()));
+		dep.setArtifactId(substituteProperties(rawDep.getArtifactId()));
+		dep.setVersion(substituteProperties(rawDep.getVersion()));
+		dep.setScope(substituteProperties(rawDep.getScope()));
+		dep.setSystemPath(substituteProperties(rawDep.getSystemPath()));
+		dep.setClassifier(substituteProperties(rawDep.getClassifier()));
+		dep.setType(substituteProperties(rawDep.getType()));
+		dep.setOptional(substituteProperties(rawDep.getOptional()));
+		
+		if (rawDep.getExclusions() != null) {
+			List<Exclusion> exclusions = new ArrayList<>(rawDep.getExclusions().size());
+			for (Exclusion rawEx : rawDep.getExclusions()) {
+				Exclusion ex = new Exclusion();
+				ex.setArtifactId(substituteProperties(rawEx.getArtifactId()));
+				ex.setGroupId(substituteProperties(rawEx.getGroupId()));
+				exclusions.add(ex);
+			}
+			dep.setExclusions(exclusions);
+		}
+		return dep;
+	}
 
-	private Map<String, String> resolveProperties() {
+	protected Map<String, String> resolveProperties() {
 		final Map<String, String> properties = new LinkedHashMap<>();
 		properties.put("project.groupId", getGroupId());
 		properties.put("project.artifactId", getArtifactId());
@@ -63,7 +131,7 @@ public class ResolvedPom {
 		return properties;
 	}
 	
-	private static final Pattern PROPERTY_PATTERN = Pattern.compile("\\$\\{(.*?)}");
+	protected static final Pattern PROPERTY_PATTERN = Pattern.compile("\\$\\{(.*?)}");
 
 	public String substituteProperties(String value) {
 		return substituteProperties(properties, value);
