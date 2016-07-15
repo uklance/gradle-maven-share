@@ -30,6 +30,7 @@ public class PomResolverTest {
 		assertEquals("parentOne-parentTwo-implTwo", implPom.getProperty("impl1"));
 		assertEquals("overrideOneImpl", implPom.getProperty("override1"));
 		assertEquals("overrideOneParent", implPom.getParent().getProperty("override1"));
+		assertEquals("com.foo:impl:1.0-SNAPSHOT", implPom.getProperty("gav"));
 		
 		File interfaceFile = getFile("maven-example-1/interface/pom.xml");
 		ResolvedPom interfacePom = resolver.resolvePom(interfaceFile, cache, null);

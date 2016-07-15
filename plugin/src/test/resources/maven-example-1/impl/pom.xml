@@ -12,5 +12,6 @@
 		<impl1>${parent1}-${parent2}-${impl2}</impl1>
 		<impl2>implTwo</impl2>
 		<override1>overrideOneImpl</override1>
+		<gav>${project.groupId}:${project.artifactId}:${project.version}</gav>
 	</properties>
 </project>

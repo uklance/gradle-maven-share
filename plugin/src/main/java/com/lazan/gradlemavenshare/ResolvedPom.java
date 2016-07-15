@@ -26,6 +26,9 @@ public class ResolvedPom {
 
 	private Map<String, String> resolveProperties() {
 		final Map<String, String> properties = new LinkedHashMap<>();
+		properties.put("project.groupId", getGroupId());
+		properties.put("project.artifactId", getArtifactId());
+		properties.put("project.version", getVersion());
 		ResolvedPomVisitor<Void> visitor = new ResolvedPomVisitor<Void>() {
 			@Override
 			public Void visit(ResolvedPom pom) {
