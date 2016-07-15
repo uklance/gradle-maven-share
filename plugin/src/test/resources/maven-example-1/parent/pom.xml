@@ -5,4 +5,11 @@
 	<version>1.0-SNAPSHOT</version>
 	<name>${project.artifactId}</name>
 	<packaging>pom</packaging>
+	
+	<properties>
+		<parent1>parentOne</parent1>
+		<parent2>parentTwo</parent2>
+		<parent3>parentThree</parent3>
+		<override1>overrideOneParent</override1>
+	</properties>
 </project>

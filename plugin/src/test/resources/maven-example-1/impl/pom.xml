@@ -7,4 +7,10 @@
 		<relativePath>../parent</relativePath>
 	</parent>
 	<artifactId>impl</artifactId>
+	
+	<properties>
+		<impl1>${parent1}-${parent2}-${impl2}</impl1>
+		<impl2>implTwo</impl2>
+		<override1>overrideOneImpl</override1>
+	</properties>
 </project>
