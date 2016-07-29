@@ -24,7 +24,7 @@ public class PomResolverTest {
 	
 	@Test
 	public void testResolvePom() {
-		File implFile = getFile("maven-example-1/impl/pom.xml");
+		File implFile = getFile("maven-sample-1/impl/pom.xml");
 
 		PomResolveCache cache = new PomResolveCache();
 		ResolvedPom implPom = resolver.resolvePom(implFile, cache);
@@ -37,7 +37,7 @@ public class PomResolverTest {
 		assertEquals("overrideOneParent", implPom.getParent().getProperty("override1"));
 		assertEquals("com.foo:impl:1.0-SNAPSHOT", implPom.getProperty("gav"));
 		
-		File interfaceFile = getFile("maven-example-1/interface/pom.xml");
+		File interfaceFile = getFile("maven-sample-1/interface/pom.xml");
 		ResolvedPom interfacePom = resolver.resolvePom(interfaceFile, cache);
 		assertEquals("1.0-SNAPSHOT", interfacePom.getVersion());
 		assertEquals("interface", interfacePom.getArtifactId());
@@ -46,7 +46,7 @@ public class PomResolverTest {
 	
 	@Test
 	public void testResolveDependencies() {
-		File implFile = getFile("maven-example-1/impl/pom.xml");
+		File implFile = getFile("maven-sample-1/impl/pom.xml");
 		PomResolveCache cache = new PomResolveCache();
 		ResolvedPom implPom = resolver.resolvePom(implFile, cache);
 		assertDependencies(implPom.getDependencies(), "junit:junit:4.12:test");

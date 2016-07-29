@@ -1,15 +1,18 @@
 plugins {
-	id 'java'
 	id 'jacoco'
 	id 'com.github.kt3k.coveralls' version '2.6.3'
 	id 'nebula.javadoc-jar' version '4.4.4'
 	id 'nebula.source-jar' version '4.4.4'
+	id 'groovy'
 }
 
 dependencies {
 	compile 'org.apache.maven:maven-model:3.3.9'
+	compile localGroovy()
+	compile gradleApi()
 	testCompile 'junit:junit:4.12'
 	testCompile 'org.mockito:mockito-all:1.10.19'
+	testCompile gradleTestKit()
 }
 
 jacocoTestReport {
@@ -17,4 +20,23 @@ jacocoTestReport {
 		xml.enabled = true
 		html.enabled = true
 	}
+}
+
+// Write the plugin's classpath to a file to share with the tests
+task createClasspathManifest {
+    def outputDir = file("$buildDir/$name")
+
+    inputs.files sourceSets.main.runtimeClasspath
+    outputs.dir outputDir
+
+    doLast {
+        outputDir.mkdirs()
+        println "creating $outputDir/plugin-classpath.txt"
+        file("$outputDir/plugin-classpath.txt").text = sourceSets.main.runtimeClasspath.join("\n")
+    }
+}
+
+// Add the classpath file to the test runtime classpath
+dependencies {
+    testRuntime files(createClasspathManifest)
 }

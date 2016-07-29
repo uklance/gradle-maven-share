@@ -1,6 +1,11 @@
-subprojects {
+allprojects {
+	apply plugin: 'eclipse'
 	group = 'com.lazan'
 	version = '0.1-SNAPSHOT'
+	eclipse.project.name = project.name.replace('gradle-maven-share', 'gms')
+}
+
+subprojects {
 	repositories {
 		mavenCentral()
 	}

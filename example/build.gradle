@@ -1,0 +1,29 @@
+buildscript {
+	dependencies {
+		classpath rootProject.fileTree(dir: '../plugin/build/libs', include: '*.jar')
+		classpath 'org.apache.maven:maven-model:3.3.9'
+	}
+	repositories {
+		mavenCentral()
+	}
+}
+subprojects {
+	buildscript {
+		dependencies {
+			classpath rootProject.fileTree(dir: '../plugin/build/libs', include: '*.jar')
+			classpath 'org.apache.maven:maven-model:3.3.9'
+		}
+		repositories {
+			mavenCentral()
+		}
+	}
+}
+
+project(':project1') {
+	apply plugin: com.lazan.gradlemavenshare.MavenSharePlugin
+	apply plugin: 'java'
+}
+
+project(':project2') {
+	apply plugin: com.lazan.gradlemavenshare.MavenSharePlugin
+}

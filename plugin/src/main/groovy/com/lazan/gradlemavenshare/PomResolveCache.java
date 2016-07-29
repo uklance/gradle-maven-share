@@ -9,7 +9,7 @@ public class PomResolveCache {
 	private final Map<String, ResolvedPom> pomsByGav = new LinkedHashMap<>();
 	private final Map<File, ResolvedPom> pomsByFile = new LinkedHashMap<>();
 	
-	public void addResolvedPom(ResolvedPom pom) {
+	public synchronized void addResolvedPom(ResolvedPom pom) {
 		if (pom.getPomFile() != null) {
 			File pomFile;
 			try {
@@ -33,7 +33,7 @@ public class PomResolveCache {
 		return gav;
 	}
 	
-	public ResolvedPom getResolvedPom(File pomFile) {
+	public synchronized ResolvedPom getResolvedPom(File pomFile) {
 		try {
 			return pomsByFile.get(pomFile.getCanonicalFile());
 		} catch (IOException e) {
@@ -41,7 +41,7 @@ public class PomResolveCache {
 		}
 	}
 	
-	public ResolvedPom getResolvedPom(String group, String artifact, String version) {
+	public synchronized ResolvedPom getResolvedPom(String group, String artifact, String version) {
 		return pomsByGav.get(createGav(group, artifact, version));
 	}
 }
