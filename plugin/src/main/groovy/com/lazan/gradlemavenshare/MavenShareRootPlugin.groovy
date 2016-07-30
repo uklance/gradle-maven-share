@@ -41,7 +41,16 @@ class MavenShareRootPlugin implements Plugin<Project> {
 				}
 				for (Dependency dep : pom.dependencies) {
 					Configuration config = configResolver.getConfiguration(dep)
-					println "${subproject.name} Adding ${dep.groupId}:${dep.artifactId}:${dep.version} to ${config.name}"
+					String gav = "${dep.groupId}:${dep.artifactId}:${dep.version}"
+					SubProjectModel gavModel = subModelsByGav[gav]
+					Object gradleDep
+					if (gavModel) {
+						gradleDep = subproject.dependencies.project(path: gavModel.project.path)
+					} else {
+						gradleDep = subproject.dependencies.create(gav)
+					}
+					println "${subproject.name} Adding ${dep.groupId}:${dep.artifactId}:${dep.version} to ${config.name} [$gradleDep]"
+					config.dependencies.add(gradleDep) 
 				}
 			}
 		}

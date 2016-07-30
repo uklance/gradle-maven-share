@@ -9,7 +9,7 @@
 	<artifactId>interface</artifactId>
 	<dependencies>
 		<dependency>
-			<groupId>comm.foo</groupId>
+			<groupId>com.foo</groupId>
 			<artifactId>project1</artifactId>
 			<version>1.0-SNAPSHOT</version>
 		</dependency>
