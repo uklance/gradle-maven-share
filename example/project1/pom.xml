@@ -19,6 +19,12 @@
 		<dependency>
 		    <groupId>junit</groupId>
 		    <artifactId>junit</artifactId>
+		    <exclusions>
+		    	<exclusion>
+		    		<groupId>foo</groupId>
+		    		<artifactId>bar</artifactId>
+		    	</exclusion>
+		    </exclusions>
 		</dependency>
 	</dependencies>
 </project>

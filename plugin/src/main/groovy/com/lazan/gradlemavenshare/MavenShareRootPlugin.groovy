@@ -4,6 +4,7 @@ import org.gradle.api.Project
 import org.gradle.api.Plugin
 import org.apache.maven.model.Model
 import org.apache.maven.model.Dependency
+import org.apache.maven.model.Exclusion
 import org.gradle.api.artifacts.Configuration
 
 class MavenShareRootPlugin implements Plugin<Project> {
@@ -40,17 +41,40 @@ class MavenShareRootPlugin implements Plugin<Project> {
 					} as ConfigurationResolver
 				}
 				for (Dependency dep : pom.dependencies) {
+					Closure depClosure = null
+					if (dep.exclusions) {
+						depClosure = {
+							for (Exclusion exclusion : dep.exclusions) {
+								Map exMap = [:]
+								if (exclusion.groupId) {
+									exMap['group'] = exclusion.groupId
+								}
+								if (exclusion.artifactId) {
+									exMap['module'] = exclusion.artifactId
+								}
+								exclude exMap
+								println "   exclude ${exMap}"
+							}    
+						}
+					}
 					Configuration config = configResolver.getConfiguration(dep)
 					String gav = "${dep.groupId}:${dep.artifactId}:${dep.version}"
 					SubProjectModel gavModel = subModelsByGav[gav]
-					Object gradleDep
+					String depNotation
 					if (gavModel) {
-						gradleDep = subproject.dependencies.project(path: gavModel.project.path)
+						depNotation = subproject.dependencies.project(path: gavModel.project.path)
 					} else {
-						gradleDep = subproject.dependencies.create(gav)
+						depNotation = gav
 					}
+
 					println "${subproject.name} Adding ${dep.groupId}:${dep.artifactId}:${dep.version} to ${config.name} [$gradleDep]"
-					config.dependencies.add(gradleDep) 
+					Object gradleDep
+					if (depClosure != null) {
+						gradleDep = subproject.dependencies.create(depNotation, depClosure)
+					} else {
+						gradleDep = subproject.dependencies.create(depNotation)
+					}						 
+					config.dependencies.add(gradleDep)
 				}
 			}
 		}
