@@ -85,16 +85,16 @@ class MavenShareRootPlugin implements Plugin<Project> {
 
 	protected void beforeShare(Map<String, SubProjectModel> subModelsByGav) { 
 		subModelsByGav.values().each { SubProjectModel subModel ->
-			subModel.project.mavenShare.beforeShare.each { Action<ResolvedPom> action ->
-				action.execute(subModel.pom)
+			subModel.project.mavenShare.beforeShare.each { ShareAction action ->
+				action.execute(subModel.pom, subModel.project)
 			}
 		}
 	}
 
 	protected void afterShare(Map<String, SubProjectModel> subModelsByGav) { 
 		subModelsByGav.values().each { SubProjectModel subModel ->
-			subModel.project.mavenShare.afterShare.each { Action<ResolvedPom> action ->
-				action.execute(subModel.pom)
+			subModel.project.mavenShare.afterShare.each { ShareAction action ->
+				action.execute(subModel.pom, subModel.project)
 			}
 		}
 	}

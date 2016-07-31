@@ -1,18 +1,16 @@
 package com.lazan.gradlemavenshare
 
-import org.gradle.api.Action
-
 class MavenShareModel {
 	Object pomFile
 	ConfigurationResolver configurationResolver
-	List<Action<ResolvedPom>> beforeShare = []
-	List<Action<ResolvedPom>> afterShare = []
+	List<ShareAction> beforeShare = []
+	List<ShareAction> afterShare = []
 	
-	void beforeShare(Action<ResolvedPom> action) {
+	void beforeShare(ShareAction action) {
 		beforeShare << action
 	}
 
-	void afterShare(Action<ResolvedPom> action) {
+	void afterShare(ShareAction action) {
 		afterShare << action
 	}
 }

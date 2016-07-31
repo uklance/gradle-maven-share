@@ -1,4 +1,5 @@
 import com.lazan.gradlemavenshare.ResolvedPom
+import com.lazan.gradlemavenshare.ShareAction
 
 buildscript {
 	dependencies {
@@ -32,13 +33,13 @@ project(':project1') {
 	apply plugin: 'com.lazan.gradlemavenshare'
 	
 	mavenShare {
-		beforeShare { ResolvedPom pom ->
-			println "Before share ${pom.artifactId}"
-		} as Action<ResolvedPom>
+		beforeShare { ResolvedPom pom, Project p ->
+			println "Before share ${pom.artifactId} -> ${p.name}"
+		} as ShareAction
 		
-		afterShare { ResolvedPom pom ->
-			println "After share ${pom.artifactId}"
-		} as Action<ResolvedPom>
+		afterShare { ResolvedPom pom, Project p ->
+			println "After share ${pom.artifactId} -> ${p.name}"
+		} as ShareAction
 	}
 }
 
