@@ -46,4 +46,9 @@ project(':project1') {
 project(':project2') {
 	apply plugin: 'java'
 	apply plugin: 'com.lazan.gradlemavenshare'
+
+	mavenShare {
+		//exclude 'junit:junit:4.12'
+		//exclude 'com.foo:project1:1.0-SNAPSHOT'
+	}
 }

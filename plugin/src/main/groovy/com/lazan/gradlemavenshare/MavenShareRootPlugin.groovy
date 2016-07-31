@@ -53,6 +53,10 @@ class MavenShareRootPlugin implements Plugin<Project> {
 			MavenShareModel msm = subproject.mavenShare
 			ConfigurationResolver configResolver = msm.configurationResolver ?: new DefaultConfigurationResolver()
 			for (Dependency dep : pom.dependencies) {
+				String depGav = "${dep.groupId}:${dep.artifactId}:${dep.version}"
+				if (msm.excludes.contains(depGav)) {
+					continue
+				}
 				Closure depClosure = null
 				if (dep.exclusions) {
 					depClosure = {
@@ -69,7 +73,6 @@ class MavenShareRootPlugin implements Plugin<Project> {
 					}
 				}
 				Configuration config = configResolver.getConfiguration(subproject, dep)
-				String depGav = "${dep.groupId}:${dep.artifactId}:${dep.version}"
 				SubProjectModel depSubModel = subModelsByGav[depGav]
 				Object depNotation = depGav
 				if (depSubModel) {

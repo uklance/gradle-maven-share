@@ -5,6 +5,7 @@ class MavenShareModel {
 	ConfigurationResolver configurationResolver
 	List<ShareAction> beforeShare = []
 	List<ShareAction> afterShare = []
+	Set<String> excludes = [] as Set
 	
 	void beforeShare(ShareAction action) {
 		beforeShare << action
@@ -12,5 +13,9 @@ class MavenShareModel {
 
 	void afterShare(ShareAction action) {
 		afterShare << action
+	}
+	
+	void exclude(String gav) {
+		excludes.add(gav)
 	}
 }
