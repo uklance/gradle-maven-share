@@ -2,6 +2,7 @@ package com.lazan.gradlemavenshare
 
 import org.gradle.api.Project
 import org.gradle.api.Plugin
+import org.gradle.api.Action
 import org.apache.maven.model.Model
 import org.apache.maven.model.Dependency
 import org.apache.maven.model.Exclusion
@@ -17,8 +18,9 @@ class MavenShareRootPlugin implements Plugin<Project> {
 		project.extensions.create('mavenShareRoot', MavenShareRootModel)
 		project.afterEvaluate {
 			Map<String, SubProjectModel> subModelsByGav = getSubModelsByGav(project)
+			beforeShare(subModelsByGav)
 			addMavenDependencies(subModelsByGav)
-			//substituteProjects(project, subModelsByGav)
+			afterShare(subModelsByGav)
 		}
 	}
 	
@@ -80,19 +82,20 @@ class MavenShareRootPlugin implements Plugin<Project> {
 			}
 		}
 	}
-	
-	/*
-	protected void substituteProjects(Project project, Map<String, SubProjectModel> subModelsByGav) {
-		project.configurations.all { Configuration config -> 
-			config.resolutionStrategy.dependencySubstitution {
-				subModelsByGav.each { String gav, SubProjectModel subModel ->
-					println "$config.name substitute module $gav  with project $subModel.project.path)"
-					substitute module(gav) with project(subModel.project.path)	
-				}
+
+	protected void beforeShare(Map<String, SubProjectModel> subModelsByGav) { 
+		subModelsByGav.values().each { SubProjectModel subModel ->
+			subModel.project.mavenShare.beforeShare.each { Action<ResolvedPom> action ->
+				action.execute(subModel.pom)
 			}
 		}
 	}
-	*/	
+
+	protected void afterShare(Map<String, SubProjectModel> subModelsByGav) { 
+		subModelsByGav.values().each { SubProjectModel subModel ->
+			subModel.project.mavenShare.afterShare.each { Action<ResolvedPom> action ->
+				action.execute(subModel.pom)
+			}
+		}
+	}
 }
-
-

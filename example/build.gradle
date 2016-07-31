@@ -1,3 +1,5 @@
+import com.lazan.gradlemavenshare.ResolvedPom
+
 buildscript {
 	dependencies {
 		classpath rootProject.fileTree(dir: '../plugin/build/libs', include: '*.jar')
@@ -28,6 +30,16 @@ allprojects {
 project(':project1') {
 	apply plugin: 'java'
 	apply plugin: 'com.lazan.gradlemavenshare'
+	
+	mavenShare {
+		beforeShare { ResolvedPom pom ->
+			println "Before share ${pom.artifactId}"
+		} as Action<ResolvedPom>
+		
+		afterShare { ResolvedPom pom ->
+			println "After share ${pom.artifactId}"
+		} as Action<ResolvedPom>
+	}
 }
 
 project(':project2') {
