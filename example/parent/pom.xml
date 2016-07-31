@@ -7,10 +7,6 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<parent1>parentOne</parent1>
-		<parent2>parentTwo</parent2>
-		<parent3>parentThree</parent3>
-		<override1>overrideOneParent</override1>
 		<junit.version>4.12</junit.version>
 	</properties>
 

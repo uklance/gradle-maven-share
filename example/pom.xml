@@ -6,8 +6,8 @@
 	<packaging>pom</packaging>
 	
 	<modules>
-		<module>impl</module>
-		<module>interface</module>
 		<module>parent</module>
+		<module>project1</module>
+		<module>project2</module>
 	</modules>
 </project>
