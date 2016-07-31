@@ -19,12 +19,19 @@
 		<dependency>
 		    <groupId>junit</groupId>
 		    <artifactId>junit</artifactId>
-		    <exclusions>
-		    	<exclusion>
-		    		<groupId>foo</groupId>
-		    		<artifactId>bar</artifactId>
-		    	</exclusion>
-		    </exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>4.3.2.RELEASE</version>
+			<!-- 
+			<exclusions>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+			</exclusions>
+			-->
 		</dependency>
 	</dependencies>
 </project>

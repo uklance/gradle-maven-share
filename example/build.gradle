@@ -19,11 +19,18 @@ subprojects {
 	}
 }
 
+allprojects {
+	repositories {
+		mavenCentral()
+	}
+}
+
 project(':project1') {
-	apply plugin: com.lazan.gradlemavenshare.MavenSharePlugin
 	apply plugin: 'java'
+	apply plugin: 'com.lazan.gradlemavenshare'
 }
 
 project(':project2') {
-	apply plugin: com.lazan.gradlemavenshare.MavenSharePlugin
+	apply plugin: 'java'
+	apply plugin: 'com.lazan.gradlemavenshare'
 }
