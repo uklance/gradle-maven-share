@@ -74,13 +74,16 @@ class MavenShareRootPlugin implements Plugin<Project> {
 				}
 				Configuration config = configResolver.getConfiguration(subproject, dep)
 				SubProjectModel depSubModel = subModelsByGav[depGav]
-				Object depNotation = depGav
+				Object depNotation
 				if (depSubModel) {
-					//subproject.evaluationDependsOn(depSubModel.project.path)
 					depNotation = subproject.project(depSubModel.project.path)
+				} else {
+					depNotation = [group: dep.groupId, name: dep.artifactId, version: dep.version]
+					if (dep.classifier) {
+					    depNotation['classifier'] = dep.classifier
+					}
 				}
-				Object gradleDep = (depClosure != null) ?
-					subproject.dependencies.create(depNotation, depClosure) : subproject.dependencies.create(depNotation)
+				Object gradleDep = subproject.dependencies.create(depNotation, depClosure)
 				config.dependencies.add(gradleDep)
 			}
 		}
