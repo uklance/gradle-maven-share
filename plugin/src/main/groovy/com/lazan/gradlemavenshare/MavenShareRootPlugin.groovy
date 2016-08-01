@@ -54,7 +54,7 @@ class MavenShareRootPlugin implements Plugin<Project> {
 			ConfigurationResolver configResolver = msm.configurationResolver ?: new DefaultConfigurationResolver()
 			for (Dependency dep : pom.dependencies) {
 				String depGav = "${dep.groupId}:${dep.artifactId}:${dep.version}"
-				if (msm.excludes.contains(depGav)) {
+				if (msm.excludes.find { Map attributes -> dependencyMatches(dep, attributes) }) {
 					continue
 				}
 				Closure depClosure = null
@@ -74,8 +74,12 @@ class MavenShareRootPlugin implements Plugin<Project> {
 				}
 				Configuration config = configResolver.getConfiguration(subproject, dep)
 				SubProjectModel depSubModel = subModelsByGav[depGav]
+				Map resolveConfig = msm.resolvers.find { dependencyMatches(dep, it.attributes) }
+				
 				Object depNotation
-				if (depSubModel) {
+				if (resolveConfig) {
+					depNotation = resolveConfig.resolver.resolve(subproject, dep, depSubModel?.project)
+				} else if (depSubModel) {
 					depNotation = subproject.project(depSubModel.project.path)
 				} else {
 					depNotation = [group: dep.groupId, name: dep.artifactId, version: dep.version]
@@ -103,5 +107,27 @@ class MavenShareRootPlugin implements Plugin<Project> {
 				action.execute(subModel.pom, subModel.project)
 			}
 		}
+	}
+	
+	protected boolean dependencyMatches(Dependency dep, Map attributes) {
+		if (attributes.groupId != null && attributes.groupId.toString() != dep.groupId) {
+			return false
+		}
+		if (attributes.artifactId != null && attributes.artifactId.toString() != dep.artifactId) {
+			return false
+		}
+		if (attributes.version != null && attributes.version.toString() != dep.version) {
+			return false
+		}
+		if (attributes.scope != null && attributes.scope.toString() != (dep.scope ?: 'compile')) {
+			return false
+		}
+		if (attributes.type != null && attributes.type.toString() != dep.type) {
+			return false
+		}
+		if (attributes.classifier != null && attributes.classifier.toString() != dep.classifier) {
+			return false
+		}
+		return true
 	}
 }
