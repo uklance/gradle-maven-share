@@ -48,12 +48,12 @@ mavenShare {
 ### Custom ConfigurationResolver
 By default, Gradle will use the maven dependency's `scope` to decide which Gradle Configuration to add the dependecy to
 
-|Maven Scope|Gradle Configuration|
-|===========|====================|
-|test       |testCompile         | 
-|compile    |compile             |
-|provided   |compileOnly         |
-|runtime    |runtime             |
+| Maven Scope | Gradle Configuration |
+| --- | --- |
+| test | testCompile | 
+| compile | compile |
+| provided | compileOnly |
+| runtime | runtime |
 
 For custom behaviour you can configure a `ConfigurationResolver`
 ```groovy
