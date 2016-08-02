@@ -1,8 +1,9 @@
 # gradle-maven-share [![Build Status](https://travis-ci.org/uklance/gradle-maven-share.svg?branch=master)](https://travis-ci.org/uklance/gradle-maven-share) [![Coverage Status](https://coveralls.io/repos/github/uklance/gradle-maven-share/badge.svg?branch=master)](https://coveralls.io/github/uklance/gradle-maven-share?branch=master)
 
-The `gradle-maven-share` plugin parses maven `pom.xml` files and adds the dependencies into the gradle project. It also provides hooks to perform custom [ShareAction](https://github.com/uklance/gradle-maven-share/blob/master/plugin/src/main/groovy/com/lazan/gradlemavenshare/ShareAction.java)s
+The `gradle-maven-share` plugin helps with migrating your build from Maven to Gradle. It allows you to have a Maven and Gradle build working in parallel. By applying the `gradle-maven-share` plugin the gradle build will share the Maven dependencies by parsing the `pom.xml` files at build time. You can share any other data from the `pom.xml` files by applying custom [ShareActions](https://github.com/uklance/gradle-maven-share/blob/master/plugin/src/main/groovy/com/lazan/gradlemavenshare/ShareAction.java)
 
 ### Custom pom file
+By default, `pom.xml` will be used in the project directory but this can be configured
 ```groovy
 apply plugin: 'com.lazan.gradlemavenshare'
 apply plugin: 'java'
@@ -13,6 +14,7 @@ mavenShare {
 ```
 
 ### Custom ShareAction
+You can mutate the Gradle project model based on the Maven project model using `ShareAction`s. These can be applied before or after the dependencies are shared
 ```groovy
 import com.lazan.gradlemavenshare.*
 def shareAction = { ResolvedPom mavenPom, Project gradleProject ->
@@ -31,6 +33,7 @@ subprojects {
 ```
 
 ### Excluding maven dependencies
+You may not wish to share all maven dependencies with gradle, dependencies can be excluded via any maven dependency attributes (groupId, artifactId, version, classifier, type)
 ```groovy
 apply plugin: 'java'
 apply plugin: 'com.lazan.gradlemavenshare'
@@ -43,6 +46,14 @@ mavenShare {
 ```
 
 ### Custom ConfigurationResolver
+By default, Gradle will use the maven dependency's `scope` to decide which Gradle Configuration to add the dependecy to
+|Maven Scope|Gradle Configuration|
+|test       |testCompile         | 
+|compile    |compile             |
+|provided   |compileOnly         |
+|runtime    |runtime             |
+
+For custom behaviour you can configure a `ConfigurationResolver`
 ```groovy
 import com.lazan.gradlemavenshare.*
 
