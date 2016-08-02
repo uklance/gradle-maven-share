@@ -30,9 +30,9 @@ subprojects {
 ```groovy
 apply plugin: 'com.lazan.gradlemavenshare'
 mavenShare {
-	exclude(groupId: 'com.foo', artifactId: 'bar'])
-	exclude(classifier: 'tests'])
-	exclude(type: 'test-jar'])
+	exclude(groupId: 'com.foo', artifactId: 'bar')
+	exclude(classifier: 'tests')
+	exclude(type: 'test-jar')
 }
 ```
 
