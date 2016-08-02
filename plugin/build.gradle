@@ -50,8 +50,9 @@ task createTestkitFiles {
 
 	doLast {
 		outputDir.mkdirs()
+		String jacocoPath = configurations.jacocoRuntime.asPath.replace('\\', '/')
 		file("$outputDir/testkit-classpath.txt").text = sourceSets.main.runtimeClasspath.join("\n")
-		file("$outputDir/testkit-gradle.properties").text = "org.gradle.jvmargs=-javaagent:${configurations.jacocoRuntime.asPath}=destfile=$buildDir/jacoco/test.exec"
+		file("$outputDir/testkit-gradle.properties").text = "org.gradle.jvmargs=-javaagent:${jacocoPath}=destfile=$buildDir/jacoco/test.exec"
 	}
 }
 
