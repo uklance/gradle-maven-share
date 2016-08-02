@@ -2,7 +2,7 @@
 
 ### Custom DependencyResolver
 
-```
+```groovy
 subprojects {
 	apply plugin: 'java'
 	apply plugin: 'com.lazan.gradlemavenshare'
