@@ -41,7 +41,7 @@ class MavenSharePluginTest extends Specification {
 		if (testkitGradlePropsResource == null) {
 			throw new IllegalStateException("Could not find testkit-gradle.properties")
 		}
-		gradlePropertiesFile.text = testkitGradlePropsResource.text
+		//gradlePropertiesFile.text = testkitGradlePropsResource.text
 	}
 
 	def "Maven dependency is shared with gradle"() {
