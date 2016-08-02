@@ -7,4 +7,4 @@ env:
 - CI=true
 
 after_success:
-- ./gradlew jacocoTestReport coveralls
+- ./gradlew test jacocoTestReport coveralls
