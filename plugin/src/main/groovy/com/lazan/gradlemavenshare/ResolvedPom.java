@@ -122,7 +122,7 @@ public class ResolvedPom {
 			for (Map.Entry<String, String> entry : properties.entrySet()) {
 				String value = entry.getValue();
 				String result = substituteProperties(properties, value);
-				if (!result.equals(value)) {
+				if (result != null && !result.equals(value)) {
 					dirtied = true;
 					entry.setValue(result);
 				}

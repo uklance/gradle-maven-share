@@ -6,6 +6,11 @@ plugins {
 	id 'groovy'
 }
 
+configurations {
+	jacocoRuntime
+}
+
+
 dependencies {
 	compile 'org.apache.maven:maven-model:3.3.9'
 	compile localGroovy()
@@ -16,6 +21,8 @@ dependencies {
 	testCompile('org.spockframework:spock-core:1.0-groovy-2.4') {
         exclude module: 'groovy-all'
     }
+	testRuntime files("$buildDir/testkitFiles")
+	jacocoRuntime "org.jacoco:org.jacoco.agent:${jacoco.toolVersion}:runtime"
 }
 
 jacocoTestReport {
@@ -34,19 +41,18 @@ test {
 	}
 }
 
-task createClasspathManifest {
-	def outputDir = file("$buildDir/$name")
+task createTestkitFiles {
+	def outputDir = file("$buildDir/testkitFiles")
 
 	inputs.files sourceSets.main.runtimeClasspath
+	inputs.files configurations.jacocoRuntime
 	outputs.dir outputDir
 
 	doLast {
 		outputDir.mkdirs()
-		file("$outputDir/plugin-classpath.txt").text = sourceSets.main.runtimeClasspath.join("\n")
+		file("$outputDir/testkit-classpath.txt").text = sourceSets.main.runtimeClasspath.join("\n")
+		file("$outputDir/testkit-gradle.properties").text = "org.gradle.jvmargs=-javaagent:${configurations.jacocoRuntime.asPath}=destfile=$buildDir/jacoco/test.exec"
 	}
 }
 
-// Add the classpath file to the test runtime classpath
-dependencies {
-	testRuntime files(createClasspathManifest)
-}
+test.dependsOn createTestkitFiles

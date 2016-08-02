@@ -23,24 +23,28 @@ class MavenSharePluginTest extends Specification {
 		testProjectDir.newFolder('project1')
 		pomFile1 = testProjectDir.newFile('project1/pom.xml')
 		
-		def pluginClasspathResource = getClass().classLoader.findResource("plugin-classpath.txt")
-		if (pluginClasspathResource == null) {
-			throw new IllegalStateException("Did not find plugin classpath resource, run `testClasses` build task.")
+		def testkitClasspathUrl = getClass().classLoader.findResource("testkit-classpath.txt")
+		if (testkitClasspathUrl == null) {
+			throw new IllegalStateException("Could not find testkit-classpath.txt")
 		}
 
-		pluginClasspath = pluginClasspathResource.readLines().collect { new File(it) }
+		pluginClasspath = testkitClasspathUrl.readLines().collect { new File(it) }
 		
 		classpathString = pluginClasspath
-			.collect { it.absolutePath.replace('\\', '\\\\') } // escape backslashes in Windows paths
+			.collect { it.absolutePath.replace('\\', '/') } // escape backslashes in Windows paths
 			.collect { "'$it'" }
 			.join(", ")
 	}
 
-	@Ignore
 	def "Maven dependency is shared with gradle"() {
 		given:
 		settingsFile << "include ':project1'"
 		buildFile << """
+			buildscript {
+        		dependencies {
+            		classpath files($classpathString)
+        		}
+    		}
 			subprojects {
 				buildscript {
             		dependencies {
@@ -49,12 +53,14 @@ class MavenSharePluginTest extends Specification {
         		}
 				apply plugin: 'java'
 				apply plugin: 'com.lazan.gradlemavenshare'
+				//apply plugin: com.lazan.gradlemavenshare.MavenSharePlugin
 			}
         """
 		
 		pomFile1 << """
 			<project>
 				<modelVersion>4.0.0</modelVersion>
+				<groupId>com.foo</groupId>
 				<artifactId>test</artifactId>
 				<version>1.0-SNAPSHOT</version>
 				<dependencies>
@@ -71,7 +77,7 @@ class MavenSharePluginTest extends Specification {
 		when:
 		def result = GradleRunner.create()
 			.withProjectDir(testProjectDir.root)
-			.withArguments(':project1:dependencies')
+			.withArguments(':project1:dependencies', '--stacktrace')
 			.build()
 
 		then:
