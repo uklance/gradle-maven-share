@@ -5,6 +5,8 @@ The `gradle-maven-share` plugin parses maven `pom.xml` files and adds the depend
 ### Custom pom file
 ```groovy
 apply plugin: 'com.lazan.gradlemavenshare'
+apply plugin: 'java'
+
 mavenShare {
 	pomFile 'custom-pom.xml'
 }
@@ -18,7 +20,9 @@ def shareAction = { ResolvedPom mavenPom, Project gradleProject ->
 } as ShareAction
 
 subprojects {
+	apply plugin: 'java'
 	apply plugin: 'com.lazan.gradlemavenshare'
+	
 	mavenShare {
 		beforeShare shareAction
 		afterShare shareAction
@@ -28,7 +32,9 @@ subprojects {
 
 ### Excluding maven dependencies
 ```groovy
+apply plugin: 'java'
 apply plugin: 'com.lazan.gradlemavenshare'
+
 mavenShare {
 	exclude(groupId: 'com.foo', artifactId: 'bar')
 	exclude(classifier: 'tests')
@@ -40,7 +46,9 @@ mavenShare {
 ```groovy
 import com.lazan.gradlemavenshare.*
 
+apply plugin: 'java'
 apply plugin: 'com.lazan.gradlemavenshare'
+
 mavenShare {
 	configurationResolver =  { Project project, org.apache.maven.model.Dependency dependency ->
 		String scope = dependency.scope ?: 'compile'
