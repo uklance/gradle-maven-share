@@ -13,6 +13,9 @@ dependencies {
 	testCompile 'junit:junit:4.12'
 	testCompile 'org.mockito:mockito-all:1.10.19'
 	testCompile gradleTestKit()
+	testCompile('org.spockframework:spock-core:1.0-groovy-2.4') {
+        exclude module: 'groovy-all'
+    }
 }
 
 jacocoTestReport {
@@ -22,21 +25,28 @@ jacocoTestReport {
 	}
 }
 
-// Write the plugin's classpath to a file to share with the tests
+test {
+	testLogging {
+		exceptionFormat = 'full'
+	}
+	beforeTest { TestDescriptor descriptor ->
+		logger.lifecycle("Running test: $descriptor")
+	}
+}
+
 task createClasspathManifest {
-    def outputDir = file("$buildDir/$name")
+	def outputDir = file("$buildDir/$name")
 
-    inputs.files sourceSets.main.runtimeClasspath
-    outputs.dir outputDir
+	inputs.files sourceSets.main.runtimeClasspath
+	outputs.dir outputDir
 
-    doLast {
-        outputDir.mkdirs()
-        println "creating $outputDir/plugin-classpath.txt"
-        file("$outputDir/plugin-classpath.txt").text = sourceSets.main.runtimeClasspath.join("\n")
-    }
+	doLast {
+		outputDir.mkdirs()
+		file("$outputDir/plugin-classpath.txt").text = sourceSets.main.runtimeClasspath.join("\n")
+	}
 }
 
 // Add the classpath file to the test runtime classpath
 dependencies {
-    testRuntime files(createClasspathManifest)
+	testRuntime files(createClasspathManifest)
 }

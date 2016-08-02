@@ -1,11 +1,9 @@
 package com.lazan.gradlemavenshare
 
-import org.gradle.api.Project
-import org.gradle.api.Plugin
-import org.gradle.api.Action
-import org.apache.maven.model.Model
 import org.apache.maven.model.Dependency
 import org.apache.maven.model.Exclusion
+import org.gradle.api.Plugin
+import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 
 class MavenShareRootPlugin implements Plugin<Project> {
