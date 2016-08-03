@@ -7,6 +7,8 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 
 class MavenShareRootPlugin implements Plugin<Project> {
+	private static final Set<String> INVALID_EXTERNAL_DEPENDENCY_PROPERTIES = ['type', 'systemPath'] as Set
+	private static final Set<String> INVALID_PROJECT_DEPENDENCY_PROPERTIES = ['type', 'systemPath', 'classifier'] as Set
 	static class SubProjectModel {
 		Project project
 		ResolvedPom pom
@@ -76,10 +78,25 @@ class MavenShareRootPlugin implements Plugin<Project> {
 				
 				Object depNotation
 				if (resolveConfig) {
+					// custom DependencyResolver
 					depNotation = resolveConfig.resolver.resolve(subproject, dep, depSubModel?.project)
 				} else if (depSubModel) {
+					// local project dependency
+					INVALID_PROJECT_DEPENDENCY_PROPERTIES.each { propName ->
+						String propValue = propName == 'type' && dep.type == 'jar' ? null : dep[propName]
+						if (propValue) {
+							throw new RuntimeException("$propName=$propValue unsupported for local project depdendency $depSubModel.project.path. Either exclude the dependency or provide a custom DependencyResolver")
+						}
+					}
 					depNotation = subproject.project(depSubModel.project.path)
 				} else {
+					// external dependency
+					INVALID_EXTERNAL_DEPENDENCY_PROPERTIES.each { propName ->
+						String propValue = propName == 'type' && dep.type == 'jar' ? null : dep[propName]
+						if (propValue) {
+							throw new RuntimeException("$propName=$propValue unsupported external dependency $depGav. Either exclude the dependency or provide a custom DependencyResolver")
+						}
+					}
 					depNotation = [group: dep.groupId, name: dep.artifactId, version: dep.version]
 					if (dep.classifier) {
 					    depNotation['classifier'] = dep.classifier
@@ -93,7 +110,8 @@ class MavenShareRootPlugin implements Plugin<Project> {
 
 	protected void beforeShare(Map<String, SubProjectModel> subModelsByGav) { 
 		subModelsByGav.values().each { SubProjectModel subModel ->
-			subModel.project.mavenShare.beforeShare.each { ShareAction action ->
+			List<ShareAction> shareActions = subModel.project.mavenShare.beforeShare
+			shareActions.each { ShareAction action ->
 				action.execute(subModel.pom, subModel.project)
 			}
 		}
@@ -101,7 +119,8 @@ class MavenShareRootPlugin implements Plugin<Project> {
 
 	protected void afterShare(Map<String, SubProjectModel> subModelsByGav) { 
 		subModelsByGav.values().each { SubProjectModel subModel ->
-			subModel.project.mavenShare.afterShare.each { ShareAction action ->
+			List<ShareAction> shareActions = subModel.project.mavenShare.afterShare
+			shareActions.each { ShareAction action ->
 				action.execute(subModel.pom, subModel.project)
 			}
 		}

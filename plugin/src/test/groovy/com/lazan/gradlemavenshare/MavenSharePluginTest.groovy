@@ -13,11 +13,11 @@ class MavenSharePluginTest extends Specification {
 	@Rule final TemporaryFolder testProjectDir = new TemporaryFolder()
 	String classpathString
 	
-	String pomSaxonSpring =  """
+	String pom1 =  """
 		<project>
 			<modelVersion>4.0.0</modelVersion>
 			<groupId>com.foo</groupId>
-			<artifactId>test</artifactId>
+			<artifactId>project1</artifactId>
 			<version>1.0-SNAPSHOT</version>
 			<dependencies>
 				<dependency>
@@ -33,12 +33,12 @@ class MavenSharePluginTest extends Specification {
 				</dependency>
 			</dependencies>
 		</project>"""
-
-	String pomSaxonSpringExcludeCommonsLogging =  """
+	
+	String pom1Exclude =  """
 		<project>
 			<modelVersion>4.0.0</modelVersion>
 			<groupId>com.foo</groupId>
-			<artifactId>test</artifactId>
+			<artifactId>project1</artifactId>
 			<version>1.0-SNAPSHOT</version>
 			<dependencies>
 				<dependency>
@@ -57,6 +57,21 @@ class MavenSharePluginTest extends Specification {
 							<artifactId>commons-logging</artifactId>
 						</exclusion>
 					</exclusions>
+				</dependency>
+			</dependencies>
+		</project>"""
+
+	String pom2 =  """
+		<project>
+			<modelVersion>4.0.0</modelVersion>
+			<groupId>com.foo</groupId>
+			<artifactId>project2</artifactId>
+			<version>1.0-SNAPSHOT</version>
+			<dependencies>
+				<dependency>
+					<groupId>com.foo</groupId>
+					<artifactId>project1</artifactId>
+					<version>1.0-SNAPSHOT</version>
 				</dependency>
 			</dependencies>
 		</project>"""
@@ -91,7 +106,7 @@ class MavenSharePluginTest extends Specification {
 			}
         """)
 		
-		writeFile("project1/pom.xml", pomSaxonSpring)
+		writeFile("project1/pom.xml", pom1)
 
 		when:
 		def result = GradleRunner.create()
@@ -128,7 +143,7 @@ class MavenSharePluginTest extends Specification {
 			}
         """)
 		
-		writeFile("project1/pom.xml", pomSaxonSpring)
+		writeFile("project1/pom.xml", pom1)
 
 		when:
 		def result = GradleRunner.create()
@@ -161,7 +176,7 @@ class MavenSharePluginTest extends Specification {
 			}
         """)
 		
-		writeFile("project1/pom.xml", pomSaxonSpringExcludeCommonsLogging)
+		writeFile("project1/pom.xml", pom1Exclude)
 
 		when:
 		def result = GradleRunner.create()
@@ -174,6 +189,38 @@ class MavenSharePluginTest extends Specification {
 		result.output.contains("net.sourceforge.saxon:saxon:9.1.0.8")
 		result.output.contains("org.springframework:spring-context:4.3.2.RELEASE")
 		!result.output.contains("commons-logging")
+	}
+	
+	def "Local project dependency is shared with gradle"() {
+		given:
+		writeFile("settings.gradle", "include ':project1', ':project2'")
+		writeFile("build.gradle", """
+			buildscript {
+        		dependencies {
+            		classpath files($classpathString)
+        		}
+    		}
+			subprojects {
+				repositories {
+					mavenCentral()
+				}
+				apply plugin: 'java'
+				apply plugin: 'com.lazan.gradlemavenshare'
+			}
+        """)
+		
+		writeFile("project1/pom.xml", pom1)
+		writeFile("project2/pom.xml", pom2)
+		
+		when:
+		def result = GradleRunner.create()
+			.withProjectDir(testProjectDir.root)
+			.withArguments(':project2:dependencies', '--stacktrace')
+			.build()
+
+		then:
+		result.task(":project2:dependencies").outcome == SUCCESS
+		result.output.contains("project :project1")
 	}
 
 	URL getResourceUrl(String path) {
