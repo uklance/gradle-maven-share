@@ -32,7 +32,7 @@ public class ResolvedPom {
 		if (model.getDependencies() == null || model.getDependencies().isEmpty()) {
 			return Collections.emptyList();
 		}
-		Map<String, Dependency> managementMap = new LinkedHashMap<>();
+		final Map<String, Dependency> managementMap = new LinkedHashMap<>();
 		ResolvedPomVisitor<Void> visitor = new ResolvedPomVisitor<Void>() {
 			@Override
 			public Void visit(ResolvedPom pom) {
