@@ -11,43 +11,24 @@ import spock.lang.Specification
 class MavenSharePluginTest extends Specification {
 
 	@Rule final TemporaryFolder testProjectDir = new TemporaryFolder()
-	File buildFile
-	File pomFile1
-	File settingsFile
-	File gradlePropertiesFile
-	List<File> pluginClasspath
 	String classpathString
 
 	def setup() {
-		settingsFile = testProjectDir.newFile('settings.gradle')
-		buildFile = testProjectDir.newFile('build.gradle')
-		gradlePropertiesFile = testProjectDir.newFile('gradle.properties')
-		testProjectDir.newFolder('project1')
-		pomFile1 = testProjectDir.newFile('project1/pom.xml')
+		URL classpathUrl = getResourceUrl("testkit-classpath.txt")
+		List<File> classpathFiles = classpathUrl.readLines().collect { new File(it) }
 		
-		def testkitClasspathUrl = getClass().classLoader.findResource("testkit-classpath.txt")
-		if (testkitClasspathUrl == null) {
-			throw new IllegalStateException("Could not find testkit-classpath.txt")
-		}
-
-		pluginClasspath = testkitClasspathUrl.readLines().collect { new File(it) }
-		
-		classpathString = pluginClasspath
+		classpathString = classpathFiles
 			.collect { it.absolutePath.replace('\\', '/') } // escape backslashes in Windows paths
 			.collect { "'$it'" }
 			.join(", ")
 			
-		def testkitGradlePropsResource = getClass().classLoader.findResource("testkit-gradle.properties")
-		if (testkitGradlePropsResource == null) {
-			throw new IllegalStateException("Could not find testkit-gradle.properties")
-		}
-		gradlePropertiesFile.text = testkitGradlePropsResource.text
+		writeFile('gradle.properties', getResourceUrl("testkit-gradle.properties").text)
 	}
 
 	def "Maven dependency is shared with gradle"() {
 		given:
-		settingsFile << "include ':project1'"
-		buildFile << """
+		writeFile("settings.gradle", "include ':project1'")
+		writeFile("build.gradle", """
 			buildscript {
         		dependencies {
             		classpath files($classpathString)
@@ -62,9 +43,9 @@ class MavenSharePluginTest extends Specification {
 				apply plugin: 'java'
 				apply plugin: 'com.lazan.gradlemavenshare'
 			}
-        """
+        """)
 		
-		pomFile1 << """
+		writeFile("project1/pom.xml", """
 			<project>
 				<modelVersion>4.0.0</modelVersion>
 				<groupId>com.foo</groupId>
@@ -79,7 +60,7 @@ class MavenSharePluginTest extends Specification {
 					</dependency>		
 				</dependencies>
 			</project>
-        """
+        """)
 
 		when:
 		def result = GradleRunner.create()
@@ -90,5 +71,17 @@ class MavenSharePluginTest extends Specification {
 		then:
 		result.task(":project1:dependencies").outcome == SUCCESS
 		result.output.contains("net.sourceforge.saxon:saxon:9.1.0.8")
+	}
+	
+	URL getResourceUrl(String path) {
+		URL url = getClass().classLoader.getResource(path)
+		if (url == null) throw new RuntimeException("No such resource $path")
+		return url
+	}
+	
+	void writeFile(String path, String text) {
+		File file = new File(testProjectDir.root, path)
+		file.parentFile.mkdirs()
+		file.text = text
 	}
 }
