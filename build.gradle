@@ -4,10 +4,11 @@ plugins {
 	id 'nebula.javadoc-jar' version '4.4.4'
 	id 'nebula.source-jar' version '4.4.4'
 	id 'groovy'
+	id "com.gradle.plugin-publish" version "0.9.5"
 }
 
 group = 'com.lazan'
-version = '0.1-SNAPSHOT'
+version = '0.1'
 
 repositories {
 	mavenCentral()
@@ -60,5 +61,19 @@ task createTestkitFiles {
 		String jacocoPath = configurations.jacocoRuntime.asPath.replace('\\', '/')
 		file("$outputDir/testkit-classpath.txt").text = sourceSets.main.runtimeClasspath.join("\n")
 		file("$outputDir/testkit-gradle.properties").text = "org.gradle.jvmargs=-javaagent:${jacocoPath}=destfile=$buildDir/jacoco/test.exec"
+	}
+}
+
+pluginBundle {
+	website = 'https://github.com/uklance/gradle-maven-share'
+	vcsUrl = 'https://github.com/uklance/gradle-maven-share.git'
+	description = 'Migrate from Maven to Gradle by sharing dependencies and more'
+	tags = ['maven', 'migrate', 'dependencies']
+
+	plugins {
+		mavenSharePlugin {
+			id = 'com.lazan.gradlemavenshare'
+			displayName = 'Gradle Maven Share Plugin'
+		}
 	}
 }
