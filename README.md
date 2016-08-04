@@ -1,6 +1,6 @@
 # gradle-maven-share [![Build Status](https://travis-ci.org/uklance/gradle-maven-share.svg?branch=master)](https://travis-ci.org/uklance/gradle-maven-share) [![Coverage Status](https://coveralls.io/repos/github/uklance/gradle-maven-share/badge.svg?branch=master)](https://coveralls.io/github/uklance/gradle-maven-share?branch=master)
 
-The `gradle-maven-share` plugin helps with migrating your build from Maven to Gradle. It allows you to have a Maven and Gradle build working in parallel by importing Maven dependencies into a Gradle build. It's not only dependencies that can be shared, there's hooks to share any configuration from your maven pom.xml's with Gradle via custom [ShareActions](https://github.com/uklance/gradle-maven-share/blob/master/plugin/src/main/groovy/com/lazan/gradlemavenshare/ShareAction.java)
+The `gradle-maven-share` plugin helps with migrating your build from Maven to Gradle. It allows you to have a Maven and Gradle build working in parallel by importing Maven dependencies into a Gradle build. It's not only dependencies that can be shared, there's hooks to share any configuration from your Maven `pom.xml` files with Gradle via custom [ShareActions](https://github.com/uklance/gradle-maven-share/blob/master/plugin/src/main/groovy/com/lazan/gradlemavenshare/ShareAction.java)
 
 It's recommended to use this plugin as a 'stepping stone' to migrate from Maven to Gradle with the end goal of removing Maven entirely. 
 
