@@ -5,6 +5,7 @@ import org.apache.maven.model.Exclusion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.GradleException
 
 class MavenShareRootPlugin implements Plugin<Project> {
 	static class SubProjectModel {
@@ -105,7 +106,7 @@ class MavenShareRootPlugin implements Plugin<Project> {
 			INVALID_EXTERNAL_DEPENDENCY_PROPERTIES.each { propName ->
 				String propValue = propName == 'type' && dep.type == 'jar' ? null : dep[propName]
 				if (propValue) {
-					throw new RuntimeException("$propName=$propValue not supported for external dependency $dep.groupId:$dep.artifactId:$dep.version. Either exclude the dependency or provide a custom DependencyResolver")
+					throw new GradleException("$propName=$propValue not supported for external dependency $dep.groupId:$dep.artifactId:$dep.version. Either exclude the dependency or provide a custom DependencyResolver")
 				}
 			}
 		}
@@ -119,7 +120,7 @@ class MavenShareRootPlugin implements Plugin<Project> {
 			INVALID_PROJECT_DEPENDENCY_PROPERTIES.each { propName ->
 				String propValue = propName == 'type' && dep.type == 'jar' ? null : dep[propName]
 				if (propValue) {
-					throw new RuntimeException("$propName=$propValue not supported for local project depdendency $depProject.path. Either exclude the dependency or provide a custom DependencyResolver")
+					throw new GradleException("$propName=$propValue not supported for local project depdendency $depProject.path. Either exclude the dependency or provide a custom DependencyResolver")
 				}
 			}
 		}

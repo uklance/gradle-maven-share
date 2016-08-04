@@ -1,11 +1,11 @@
 package com.lazan.gradlemavenshare
 
+import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
-import static org.gradle.testkit.runner.TaskOutcome.*
+import org.gradle.testkit.runner.TaskOutcome;
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 
-import spock.lang.Ignore;
 import spock.lang.Specification
 
 class MavenSharePluginTest extends Specification {
@@ -115,7 +115,7 @@ class MavenSharePluginTest extends Specification {
 			.build()
 
 		then:
-		result.task(":project1:dependencies").outcome == SUCCESS
+		result.task(":project1:dependencies").outcome == TaskOutcome.SUCCESS
 		result.output.contains("net.sourceforge.saxon:saxon:9.1.0.8")
 		result.output.contains("org.springframework:spring-context:4.3.2.RELEASE")
 		result.output.contains("commons-logging")
@@ -152,7 +152,7 @@ class MavenSharePluginTest extends Specification {
 			.build()
 
 		then:
-		result.task(":project1:dependencies").outcome == SUCCESS
+		result.task(":project1:dependencies").outcome == TaskOutcome.SUCCESS
 		!result.output.contains("net.sourceforge.saxon:saxon:9.1.0.8")
 		result.output.contains("org.springframework:spring-context:4.3.2.RELEASE")
 		result.output.contains("commons-logging")
@@ -185,7 +185,7 @@ class MavenSharePluginTest extends Specification {
 			.build()
 
 		then:
-		result.task(":project1:dependencies").outcome == SUCCESS
+		result.task(":project1:dependencies").outcome == TaskOutcome.SUCCESS
 		result.output.contains("net.sourceforge.saxon:saxon:9.1.0.8")
 		result.output.contains("org.springframework:spring-context:4.3.2.RELEASE")
 		!result.output.contains("commons-logging")
@@ -219,9 +219,55 @@ class MavenSharePluginTest extends Specification {
 			.build()
 
 		then:
-		result.task(":project2:dependencies").outcome == SUCCESS
+		result.task(":project2:dependencies").outcome == TaskOutcome.SUCCESS
 		result.output.contains("project :project1")
 	}
+	
+	def "Unsupported test-jar type throws exception"() {
+		given:
+		writeFile("settings.gradle", "include ':project1'")
+		writeFile("build.gradle", """
+			buildscript {
+        		dependencies {
+            		classpath files($classpathString)
+        		}
+    		}
+			subprojects {
+				repositories {
+					mavenCentral()
+				}
+				apply plugin: 'java'
+				apply plugin: 'com.lazan.gradlemavenshare'
+			}"""
+		)
+		
+		writeFile("project1/pom.xml", """
+			<project>
+				<modelVersion>4.0.0</modelVersion>
+				<groupId>com.foo</groupId>
+				<artifactId>project1</artifactId>
+				<version>1.0-SNAPSHOT</version>
+				<dependencies>
+					<dependency>
+						<groupId>org.springframework</groupId>
+						<artifactId>spring-context</artifactId>
+						<version>4.3.2.RELEASE</version>
+						<type>test-jar</type>
+					</dependency>
+				</dependencies>
+			</project>"""
+		)
+
+		when:
+		BuildResult result = GradleRunner.create()
+			.withProjectDir(testProjectDir.root)
+			.withArguments(':project1:dependencies', '--stacktrace')
+			.buildAndFail()
+
+		then:
+		result.output.contains("type=test-jar not supported for external dependency org.springframework:spring-context:4.3.2.RELEASE")
+	}
+
 
 	URL getResourceUrl(String path) {
 		URL url = getClass().classLoader.getResource(path)
