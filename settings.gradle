@@ -1,5 +1,1 @@
-include 'plugin'
-//include 'example'
-rootProject.name = 'gradle-maven-share-root'
-project(':plugin').name = 'gradle-maven-share-plugin'
-//project(':example').name = 'gradle-maven-share-example'
+rootProject.name = 'gradle-maven-share-plugin'
