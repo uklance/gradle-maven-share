@@ -7,8 +7,6 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 
 class MavenShareRootPlugin implements Plugin<Project> {
-	private static final Set<String> INVALID_EXTERNAL_DEPENDENCY_PROPERTIES = ['type', 'systemPath'] as Set
-	private static final Set<String> INVALID_PROJECT_DEPENDENCY_PROPERTIES = ['type', 'systemPath', 'classifier'] as Set
 	static class SubProjectModel {
 		Project project
 		ResolvedPom pom
@@ -19,7 +17,7 @@ class MavenShareRootPlugin implements Plugin<Project> {
 		project.afterEvaluate {
 			Map<String, SubProjectModel> subModelsByGav = getSubModelsByGav(project)
 			beforeShare(subModelsByGav)
-			addMavenDependencies(subModelsByGav)
+			shareMavenDependencies(project, subModelsByGav)
 			afterShare(subModelsByGav)
 		}
 	}
@@ -28,12 +26,13 @@ class MavenShareRootPlugin implements Plugin<Project> {
 		PomResolver pomResolver = new PomResolver()
 		PomResolveCache cache = new PomResolveCache()
 		Map<String, SubProjectModel> subModelsByGav = [:]
+		MavenShareRootModel rootModel = project.mavenShareRoot
 		project.subprojects { Project subproject ->
 			if (subproject.plugins.hasPlugin(MavenSharePlugin)) {
 				SubProjectModel subModel = new SubProjectModel()
 				MavenShareModel msm = subproject.mavenShare
 				File pomFile = subproject.file(msm.pomFile == null ? 'pom.xml' : msm.pomFile)
-				ResolvedPom pom = pomResolver.resolvePom(pomFile, cache, project.mavenShareRoot.pomSource)
+				ResolvedPom pom = pomResolver.resolvePom(pomFile, cache, rootModel.pomSource)
 				subModel.project = subproject
 				subModel.pom = pom
 				String gav = "${pom.groupId}:${pom.artifactId}:${pom.version}"
@@ -46,7 +45,8 @@ class MavenShareRootPlugin implements Plugin<Project> {
 		return subModelsByGav
 	}
 	
-	protected void addMavenDependencies(Map<String, SubProjectModel> subModelsByGav) { 
+	protected void shareMavenDependencies(Project project, Map<String, SubProjectModel> subModelsByGav) { 
+		MavenShareRootModel rootModel = project.mavenShareRoot
 		subModelsByGav.each { String subGav, SubProjectModel subModel ->
 			Project subproject = subModel.project
 			ResolvedPom pom = subModel.pom
@@ -82,21 +82,11 @@ class MavenShareRootPlugin implements Plugin<Project> {
 					depNotation = resolveConfig.resolver.resolve(subproject, dep, depSubModel?.project)
 				} else if (depSubModel) {
 					// local project dependency
-					INVALID_PROJECT_DEPENDENCY_PROPERTIES.each { propName ->
-						String propValue = propName == 'type' && dep.type == 'jar' ? null : dep[propName]
-						if (propValue) {
-							throw new RuntimeException("$propName=$propValue unsupported for local project depdendency $depSubModel.project.path. Either exclude the dependency or provide a custom DependencyResolver")
-						}
-					}
+					dep = validateProjectDependency(rootModel, dep, depSubModel.project)
 					depNotation = subproject.project(depSubModel.project.path)
 				} else {
 					// external dependency
-					INVALID_EXTERNAL_DEPENDENCY_PROPERTIES.each { propName ->
-						String propValue = propName == 'type' && dep.type == 'jar' ? null : dep[propName]
-						if (propValue) {
-							throw new RuntimeException("$propName=$propValue unsupported external dependency $depGav. Either exclude the dependency or provide a custom DependencyResolver")
-						}
-					}
+					dep = validateExternalDependency(rootModel, dep)
 					depNotation = [group: dep.groupId, name: dep.artifactId, version: dep.version]
 					if (dep.classifier) {
 					    depNotation['classifier'] = dep.classifier
@@ -106,6 +96,34 @@ class MavenShareRootPlugin implements Plugin<Project> {
 				config.dependencies.add(gradleDep)
 			}
 		}
+	}
+
+	private static final Set<String> INVALID_EXTERNAL_DEPENDENCY_PROPERTIES = ['type', 'systemPath'] as Set
+
+	protected Dependency validateExternalDependency(MavenShareRootModel rootModel, Dependency dep) {
+		if (!rootModel.allowUnsupportedDependencyProperties) {
+			INVALID_EXTERNAL_DEPENDENCY_PROPERTIES.each { propName ->
+				String propValue = propName == 'type' && dep.type == 'jar' ? null : dep[propName]
+				if (propValue) {
+					throw new RuntimeException("$propName=$propValue not supported for external dependency $dep.groupId:$dep.artifactId:$dep.version. Either exclude the dependency or provide a custom DependencyResolver")
+				}
+			}
+		}
+		return dep
+	}
+
+	private static final Set<String> INVALID_PROJECT_DEPENDENCY_PROPERTIES = ['type', 'systemPath', 'classifier'] as Set
+
+	protected Dependency validateProjectDependency(MavenShareRootModel rootModel, Dependency dep, Project depProject) {
+		if (!rootModel.allowUnsupportedDependencyProperties) {
+			INVALID_PROJECT_DEPENDENCY_PROPERTIES.each { propName ->
+				String propValue = propName == 'type' && dep.type == 'jar' ? null : dep[propName]
+				if (propValue) {
+					throw new RuntimeException("$propName=$propValue not supported for local project depdendency $depProject.path. Either exclude the dependency or provide a custom DependencyResolver")
+				}
+			}
+		}
+		return dep
 	}
 
 	protected void beforeShare(Map<String, SubProjectModel> subModelsByGav) { 

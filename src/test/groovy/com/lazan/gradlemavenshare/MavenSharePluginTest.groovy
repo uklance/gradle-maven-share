@@ -103,8 +103,8 @@ class MavenSharePluginTest extends Specification {
 				}
 				apply plugin: 'java'
 				apply plugin: 'com.lazan.gradlemavenshare'
-			}
-        """)
+			}"""
+		)
 		
 		writeFile("project1/pom.xml", pom1)
 
@@ -140,8 +140,8 @@ class MavenSharePluginTest extends Specification {
 				mavenShare {
 					exclude([artifactId: 'saxon'])
 				}
-			}
-        """)
+			}"""
+		)
 		
 		writeFile("project1/pom.xml", pom1)
 
@@ -173,8 +173,8 @@ class MavenSharePluginTest extends Specification {
 				}
 				apply plugin: 'java'
 				apply plugin: 'com.lazan.gradlemavenshare'
-			}
-        """)
+			}"""
+		)
 		
 		writeFile("project1/pom.xml", pom1Exclude)
 
@@ -206,8 +206,8 @@ class MavenSharePluginTest extends Specification {
 				}
 				apply plugin: 'java'
 				apply plugin: 'com.lazan.gradlemavenshare'
-			}
-        """)
+			}"""
+		)
 		
 		writeFile("project1/pom.xml", pom1)
 		writeFile("project2/pom.xml", pom2)
