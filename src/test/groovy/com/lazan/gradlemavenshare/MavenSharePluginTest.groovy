@@ -13,64 +13,6 @@ class MavenSharePluginTest extends Specification {
 	@Rule final TemporaryFolder testProjectDir = new TemporaryFolder()
 	String classpathString
 	
-	String pom1 =  """
-		<project>
-			<modelVersion>4.0.0</modelVersion>
-			<groupId>com.foo</groupId>
-			<artifactId>project1</artifactId>
-			<version>1.0-SNAPSHOT</version>
-			<dependencies>
-				<dependency>
-					<groupId>net.sourceforge.saxon</groupId>
-					<artifactId>saxon</artifactId>
-					<version>9.1.0.8</version>
-					<classifier>dom</classifier>
-				</dependency>
-				<dependency>
-					<groupId>org.springframework</groupId>
-					<artifactId>spring-context</artifactId>
-					<version>4.3.2.RELEASE</version>
-				</dependency>
-			</dependencies>
-		</project>"""
-	
-	String pom1Exclude =  """
-		<project>
-			<modelVersion>4.0.0</modelVersion>
-			<groupId>com.foo</groupId>
-			<artifactId>project1</artifactId>
-			<version>1.0-SNAPSHOT</version>
-			<dependencies>
-				<dependency>
-					<groupId>net.sourceforge.saxon</groupId>
-					<artifactId>saxon</artifactId>
-					<version>9.1.0.8</version>
-					<classifier>dom</classifier>
-				</dependency>
-				<dependency>
-					<groupId>org.springframework</groupId>
-					<artifactId>spring-context</artifactId>
-					<version>4.3.2.RELEASE</version>
-					<exclusions>
-						<exclusion>
-							<groupId>commons-logging</groupId>
-							<artifactId>commons-logging</artifactId>
-						</exclusion>
-					</exclusions>
-				</dependency>
-			</dependencies>
-		</project>"""
-
-	String pom2 =  """
-		<project>
-			<modelVersion>4.0.0</modelVersion>
-			<groupId>com.foo</groupId>
-			<artifactId>project2</artifactId>
-			<version>1.0-SNAPSHOT</version>
-			<dependencies>
-			</dependencies>
-		</project>"""
-
 	def setup() {
 		URL classpathUrl = getResourceUrl("testkit-classpath.txt")
 		List<File> classpathFiles = classpathUrl.readLines().collect { new File(it) }
