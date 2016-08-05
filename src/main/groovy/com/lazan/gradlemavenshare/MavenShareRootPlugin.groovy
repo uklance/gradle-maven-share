@@ -28,7 +28,7 @@ class MavenShareRootPlugin implements Plugin<Project> {
 		PomResolveCache cache = new PomResolveCache()
 		Map<String, SubProjectModel> subModelsByGav = [:]
 		MavenShareRootModel rootModel = project.mavenShareRoot
-		project.subprojects { Project subproject ->
+		project.allprojects { Project subproject ->
 			if (subproject.plugins.hasPlugin(MavenSharePlugin)) {
 				SubProjectModel subModel = new SubProjectModel()
 				MavenShareModel msm = subproject.mavenShare
