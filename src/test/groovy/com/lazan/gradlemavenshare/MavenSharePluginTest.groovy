@@ -68,11 +68,6 @@ class MavenSharePluginTest extends Specification {
 			<artifactId>project2</artifactId>
 			<version>1.0-SNAPSHOT</version>
 			<dependencies>
-				<dependency>
-					<groupId>com.foo</groupId>
-					<artifactId>project1</artifactId>
-					<version>1.0-SNAPSHOT</version>
-				</dependency>
 			</dependencies>
 		</project>"""
 
@@ -91,22 +86,20 @@ class MavenSharePluginTest extends Specification {
 	def "Maven dependencies are shared with gradle"() {
 		given:
 		writeFile("settings.gradle", "include ':project1'")
-		writeFile("build.gradle", """
-			buildscript {
-        		dependencies {
-            		classpath files($classpathString)
-        		}
-    		}
-			subprojects {
-				repositories {
-					mavenCentral()
-				}
-				apply plugin: 'java'
-				apply plugin: 'com.lazan.gradlemavenshare'
-			}"""
+		writeGradle("build.gradle")
+		writePom("project1/pom.xml", "project1", """
+			<dependency>
+				<groupId>net.sourceforge.saxon</groupId>
+				<artifactId>saxon</artifactId>
+				<version>9.1.0.8</version>
+				<classifier>dom</classifier>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-context</artifactId>
+				<version>4.3.2.RELEASE</version>
+			</dependency>"""
 		)
-		
-		writeFile("project1/pom.xml", pom1)
 
 		when:
 		def result = GradleRunner.create()
@@ -124,26 +117,26 @@ class MavenSharePluginTest extends Specification {
 	def "Maven dependencies can be excluded"() {
 		given:
 		writeFile("settings.gradle", "include ':project1'")
-		writeFile("build.gradle", """
-			buildscript {
-        		dependencies {
-            		classpath files($classpathString)
-        		}
-    		}
-			subprojects {
-				repositories {
-					mavenCentral()
-				}
-				apply plugin: 'java'
-				apply plugin: 'com.lazan.gradlemavenshare'
 
-				mavenShare {
-					exclude([artifactId: 'saxon'])
-				}
-			}"""
+		writePom("project1/pom.xml", "project1", """
+			<dependency>
+				<groupId>net.sourceforge.saxon</groupId>
+				<artifactId>saxon</artifactId>
+				<version>9.1.0.8</version>
+				<classifier>dom</classifier>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-context</artifactId>
+				<version>4.3.2.RELEASE</version>
+			</dependency>"""
 		)
 		
-		writeFile("project1/pom.xml", pom1)
+		writeGradle("build.gradle", """
+			mavenShare {
+				exclude([artifactId: 'saxon'])
+			}"""
+		)
 
 		when:
 		def result = GradleRunner.create()
@@ -161,22 +154,27 @@ class MavenSharePluginTest extends Specification {
 	def "Maven exclude is shared with gradle"() {
 		given:
 		writeFile("settings.gradle", "include ':project1'")
-		writeFile("build.gradle", """
-			buildscript {
-        		dependencies {
-            		classpath files($classpathString)
-        		}
-    		}
-			subprojects {
-				repositories {
-					mavenCentral()
-				}
-				apply plugin: 'java'
-				apply plugin: 'com.lazan.gradlemavenshare'
-			}"""
-		)
+		writeGradle("build.gradle")
 		
-		writeFile("project1/pom.xml", pom1Exclude)
+		writePom("project1/pom.xml", "project1", """
+			<dependency>
+				<groupId>net.sourceforge.saxon</groupId>
+				<artifactId>saxon</artifactId>
+				<version>9.1.0.8</version>
+				<classifier>dom</classifier>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-context</artifactId>
+				<version>4.3.2.RELEASE</version>
+				<exclusions>
+					<exclusion>
+						<groupId>commons-logging</groupId>
+						<artifactId>commons-logging</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>"""
+		)
 
 		when:
 		def result = GradleRunner.create()
@@ -194,24 +192,23 @@ class MavenSharePluginTest extends Specification {
 	def "Local project dependency is shared with gradle"() {
 		given:
 		writeFile("settings.gradle", "include ':project1', ':project2'")
-		writeFile("build.gradle", """
-			buildscript {
-        		dependencies {
-            		classpath files($classpathString)
-        		}
-    		}
-			subprojects {
-				repositories {
-					mavenCentral()
-				}
-				apply plugin: 'java'
-				apply plugin: 'com.lazan.gradlemavenshare'
-			}"""
+		writeGradle("build.gradle")
+		
+		writePom("project1/pom.xml", "project1", """
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-context</artifactId>
+				<version>4.3.2.RELEASE</version>
+			</dependency>"""
 		)
-		
-		writeFile("project1/pom.xml", pom1)
-		writeFile("project2/pom.xml", pom2)
-		
+		writePom("project2/pom.xml", "project2", """
+			<dependency>
+				<groupId>com.foo</groupId>
+				<artifactId>project1</artifactId>
+				<version>1.0-SNAPSHOT</version>
+			</dependency>"""
+		)
+
 		when:
 		def result = GradleRunner.create()
 			.withProjectDir(testProjectDir.root)
@@ -221,41 +218,21 @@ class MavenSharePluginTest extends Specification {
 		then:
 		result.task(":project2:dependencies").outcome == TaskOutcome.SUCCESS
 		result.output.contains("project :project1")
+		result.output.contains("spring-context")
 	}
 	
 	def "Unsupported test-jar type throws exception"() {
 		given:
 		writeFile("settings.gradle", "include ':project1'")
-		writeFile("build.gradle", """
-			buildscript {
-        		dependencies {
-            		classpath files($classpathString)
-        		}
-    		}
-			subprojects {
-				repositories {
-					mavenCentral()
-				}
-				apply plugin: 'java'
-				apply plugin: 'com.lazan.gradlemavenshare'
-			}"""
-		)
+		writeGradle("build.gradle")
 		
-		writeFile("project1/pom.xml", """
-			<project>
-				<modelVersion>4.0.0</modelVersion>
-				<groupId>com.foo</groupId>
-				<artifactId>project1</artifactId>
-				<version>1.0-SNAPSHOT</version>
-				<dependencies>
-					<dependency>
-						<groupId>org.springframework</groupId>
-						<artifactId>spring-context</artifactId>
-						<version>4.3.2.RELEASE</version>
-						<type>test-jar</type>
-					</dependency>
-				</dependencies>
-			</project>"""
+		writePom("project1/pom.xml", "project1", """
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-context</artifactId>
+				<version>4.3.2.RELEASE</version>
+				<type>test-jar</type>
+			</dependency>"""
 		)
 
 		when:
@@ -279,5 +256,40 @@ class MavenSharePluginTest extends Specification {
 		File file = new File(testProjectDir.root, path)
 		file.parentFile.mkdirs()
 		file.text = text
+	}
+	
+	String writePom(String path, String artifactId, String dependencies) {
+		String xml =  """
+			<project>
+				<modelVersion>4.0.0</modelVersion>
+				<groupId>com.foo</groupId>
+				<artifactId>${artifactId}</artifactId>
+				<version>1.0-SNAPSHOT</version>
+				<dependencies>
+					${dependencies}
+				</dependencies>
+			</project>
+		"""
+		writeFile(path, xml)
+	}
+	
+	String writeGradle(String path, String additional="") {
+		String script = """
+			buildscript {
+				dependencies {
+					classpath files($classpathString)
+				}
+			}
+			subprojects {
+				repositories {
+					mavenCentral()
+				}
+				apply plugin: 'java'
+				apply plugin: 'com.lazan.gradlemavenshare'
+
+				$additional
+			}
+		"""
+		writeFile(path, script) 
 	}
 }
