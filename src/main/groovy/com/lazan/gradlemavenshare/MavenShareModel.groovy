@@ -9,7 +9,6 @@ class MavenShareModel {
 	List<ShareAction> afterShare = []
 	List<Map> excludes = []
 	List<Map> resolvers = []
-	List<String> dependentTasks = ['compileJava', 'dependencies', 'dependencyInsight']
 	
 	void beforeShare(ShareAction action) {
 		beforeShare << action

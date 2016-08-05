@@ -162,7 +162,87 @@ class MavenSharePluginTest extends Specification {
 		result.output.contains("project :project1")
 		result.output.contains("spring-context")
 	}
-	
+
+	def "Multi project dependencies compiles"() {
+		given:
+		writeFile("settings.gradle", "include ':clientTest', ':server', ':client'")
+		writeGradle("build.gradle", """
+			test {
+				afterTest { descriptor, result ->
+					println String.format("Test result %s = %s", descriptor.className, result.resultType)
+				}
+			}"""
+		)
+		
+		writePom("server/pom.xml", "server", """
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-context</artifactId>
+				<version>4.3.2.RELEASE</version>
+			</dependency>"""
+		)
+		writeFile("server/src/main/java/com/foo/Server.java", """
+			package com.foo;
+			public class Server {
+				public String getGreeting(String name) throws Exception {
+					Class.forName("org.springframework.context.ApplicationContext");
+					return "Hello " + name;
+				}
+			}
+		""")
+		
+		writePom("client/pom.xml", "client", """
+			<dependency>
+				<groupId>com.foo</groupId>
+				<artifactId>server</artifactId>
+				<version>1.0-SNAPSHOT</version>
+			</dependency>"""
+		)
+		writeFile("client/src/main/java/com/foo/Client.java", """
+			package com.foo;
+			public class Client {
+				public String helloWorld() throws Exception {
+					return new Server().getGreeting("world");
+				}
+			}"""
+		)
+
+		writePom("clientTest/pom.xml", "clientTest", """
+			<dependency>
+				<groupId>com.foo</groupId>
+				<artifactId>client</artifactId>
+				<version>1.0-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+			    <groupId>junit</groupId>
+			    <artifactId>junit</artifactId>
+			    <version>4.11</version>
+				<scope>test</scope>
+			</dependency>"""
+		)
+
+		writeFile("clientTest/src/test/java/com/foo/ClientTest.java", """
+			package com.foo;
+			import org.junit.*;
+			public class ClientTest {
+				@Test
+				public void testGetGreeting() throws Exception {
+					Assert.assertEquals("Hello world", new Client().helloWorld());
+				}
+			}
+		""")
+
+		when:
+		def result = GradleRunner.create()
+			.withProjectDir(testProjectDir.root)
+			.withArguments('test', '--stacktrace')
+			.build()
+
+		then:
+		result.task(":clientTest:test").outcome == TaskOutcome.SUCCESS
+		result.output.contains("Test result com.foo.ClientTest = SUCCESS")
+	}
+
 	def "Unsupported test-jar type throws exception"() {
 		given:
 		writeFile("settings.gradle", "include ':project1'")
@@ -232,6 +312,6 @@ class MavenSharePluginTest extends Specification {
 				$additional
 			}
 		"""
-		writeFile(path, script) 
+		writeFile(path, script)
 	}
 }
