@@ -54,6 +54,51 @@ class MavenSharePluginTest extends Specification {
 		result.output.contains("org.springframework:spring-context:4.3.2.RELEASE")
 		result.output.contains("commons-logging")
 	}
+	
+	def "Custom share actions are applied"() {
+		given:
+		writeGradleSingle("build.gradle", """
+			import com.lazan.gradlemavenshare.*
+
+			def beforeAction = { ResolvedPom mavenPom, Project gradleProject ->
+			    println "prop1 = " + mavenPom.getProperty('prop1')
+			} as ShareAction
+
+			def afterAction = { ResolvedPom mavenPom, Project gradleProject ->
+			    println "prop2 = " + mavenPom.getProperty('prop2')
+			} as ShareAction
+
+			mavenShare {
+				beforeShare beforeAction
+				afterShare afterAction
+			}"""
+		)
+
+		writeFile("pom.xml", """
+			<project>
+				<modelVersion>4.0.0</modelVersion>
+				<groupId>com.foo</groupId>
+				<artifactId>sample</artifactId>
+				<version>1.0-SNAPSHOT</version>
+				<properties>
+					<prop1>foo</prop1>
+					<prop2>bar</prop2>
+				</properties>
+			</project>"""
+		)
+
+		when:
+		def result = GradleRunner.create()
+			.withProjectDir(testProjectDir.root)
+			.withArguments('dependencies', '--stacktrace')
+			.build()
+
+		then:
+		result.task(":dependencies").outcome == TaskOutcome.SUCCESS
+		result.output.contains("prop1 = foo")
+		result.output.contains("prop2 = bar")
+	}
+
 
 	def "Maven dependencies can be excluded"() {
 		given:
