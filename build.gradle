@@ -4,12 +4,13 @@ plugins {
 	id 'nebula.javadoc-jar' version '4.4.4'
 	id 'nebula.source-jar' version '4.4.4'
 	id 'groovy'
+	id 'maven-publish'
 	id "com.gradle.plugin-publish" version "0.9.5"
 	id 'com.jfrog.bintray' version '1.7'
 }
 
 group = 'com.lazan'
-version = '0.3-SNAPSHOT'
+version = '0.3'
 
 repositories {
 	mavenCentral()
@@ -77,6 +78,14 @@ pluginBundle {
 			displayName = 'Gradle Maven Share Plugin'
 		}
 	}
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+        }
+    }
 }
 
 bintray {
