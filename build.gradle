@@ -5,6 +5,7 @@ plugins {
 	id 'nebula.source-jar' version '4.4.4'
 	id 'groovy'
 	id "com.gradle.plugin-publish" version "0.9.5"
+	id 'com.jfrog.bintray' version '1.7'
 }
 
 group = 'com.lazan'
@@ -74,6 +75,26 @@ pluginBundle {
 		mavenSharePlugin {
 			id = 'com.lazan.gradlemavenshare'
 			displayName = 'Gradle Maven Share Plugin'
+		}
+	}
+}
+
+bintray {
+	user = project.properties['bintrayUser']
+	key = project.properties['bintrayKey']
+	publications = ['maven', 'nebula']
+	publish = true
+	pkg {
+		repo = 'maven'
+		name = project.name
+		licenses = ['Apache-2.0']
+		vcsUrl = 'https://github.com/uklance/gradle-maven-share.git'
+		githubRepo = 'uklance/gradle-maven-share'
+		labels = ['maven', 'dependencies', 'migrate']
+		version {
+			name = project.version
+			released = new Date()
+			desc = "Gradle Maven Share Plugin ${project.version}"
 		}
 	}
 }
