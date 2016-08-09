@@ -19,8 +19,8 @@ mavenShare {
 You can mutate the Gradle project model based on the Maven project model using `ShareAction`s. These can be applied before or after the dependencies are shared
 ```groovy
 import com.lazan.gradlemavenshare.*
-def shareAction = { ResolvedPom mavenPom, Project gradleProject ->
-	println "Sharing $mavenPom.artifactId with $gradleProject.name"
+def shareAction = { ResolvedPom pom, Project proj, ProjectResolver resolver ->
+	println "Sharing $pom.artifactId with $proj.name"
 } as ShareAction
 
 subprojects {
@@ -28,8 +28,8 @@ subprojects {
 	apply plugin: 'com.lazan.gradlemavenshare'
 	
 	mavenShare {
-		beforeShare shareAction
-		afterShare shareAction
+		doFirst shareAction
+		doLast shareAction
 	}
 }
 ```
