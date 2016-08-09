@@ -5,10 +5,10 @@ import org.gradle.api.Project;
 
 public interface DependencyResolver {
 	/**
-	 * @param containingProject Gradle project to add the dependency to
+	 * @param project Gradle project to add the dependency to
 	 * @param dependency Maven dependency to resolve
-	 * @param dependencyProject Gradle project that matches the dependency (null for external/non-project dependencies)
+	 * @param resolver Resolves dependencies with Projects where applicable 
 	 * @return Dependency notation (Map, String)
 	 */
-	Object resolve(Project containingProject, Dependency dependency, Project dependencyProject);
+	Object resolve(Project project, Dependency dependency, ProjectResolver resolver);
 }

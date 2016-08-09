@@ -1,21 +1,20 @@
 package com.lazan.gradlemavenshare
 
 class MavenShareModel {
-	private static final Set<String> ATTRIBUTE_NAMES = ['groupId', 'artifactId', 'version', 'type', 'scope', 'classifier'] as Set
+	private static final Set<String> ATTRIBUTE_NAMES = ['groupId', 'artifactId', 'version', 'type', 'scope', 'classifier', 'systemPath'] as Set
 	
 	Object pomFile
 	ConfigurationResolver configurationResolver
-	List<ShareAction> beforeShare = []
-	List<ShareAction> afterShare = []
+	List<ShareAction> shareActions = [new DependencyShareAction()]
 	List<Map> excludes = []
 	List<Map> resolvers = []
 	
-	void beforeShare(ShareAction action) {
-		beforeShare << action
+	void doFirst(ShareAction action) {
+		shareActions.add(0, action)
 	}
 
-	void afterShare(ShareAction action) {
-		afterShare << action
+	void doLast(ShareAction action) {
+		shareActions << action
 	}
 	
 	void exclude(Map attributes) {

@@ -1,5 +1,6 @@
 package com.lazan.gradlemavenshare
 
+import org.gradle.api.Project;
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome;
@@ -60,17 +61,17 @@ class MavenSharePluginTest extends Specification {
 		writeGradleSingle("build.gradle", """
 			import com.lazan.gradlemavenshare.*
 
-			def beforeAction = { ResolvedPom mavenPom, Project gradleProject ->
-			    println "prop1 = " + mavenPom.getProperty('prop1')
+			def beforeAction = { ResolvedPom pom, Project project, ProjectResolver resolver ->
+			    println "prop1 = " + pom.getProperty('prop1')
 			} as ShareAction
 
-			def afterAction = { ResolvedPom mavenPom, Project gradleProject ->
-			    println "prop2 = " + mavenPom.getProperty('prop2')
+			def afterAction = { ResolvedPom pom, Project project, ProjectResolver resolver ->
+			    println "prop2 = " + pom.getProperty('prop2')
 			} as ShareAction
 
 			mavenShare {
-				beforeShare beforeAction
-				afterShare afterAction
+				doFirst beforeAction
+				doLast afterAction
 			}"""
 		)
 
