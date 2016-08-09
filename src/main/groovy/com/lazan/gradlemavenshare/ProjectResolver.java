@@ -4,6 +4,6 @@ import org.apache.maven.model.Dependency;
 import org.gradle.api.Project;
 
 public interface ProjectResolver {
-	boolean isProjectDependency(Dependency dependency);
+	boolean isProject(Dependency dependency);
 	Project getProject(Dependency dependency);
 }

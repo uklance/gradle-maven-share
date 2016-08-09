@@ -53,14 +53,9 @@ class MavenShareRootPlugin implements Plugin<Project> {
 		return subModelsByGav
 	}
 	
-	
-	protected String getGav(Dependency dependency) {
-		return "$dependency.groupId:$dependency.artifactId:$dependency.version".toString()
-	}
-	
 	protected ProjectResolver createProjectResolver(Map<String, SubProjectModel> subModelsByGav) {
 		return new ProjectResolver() {
-			boolean isProjectDependency(Dependency dependency) {
+			boolean isProject(Dependency dependency) {
 				return subModelsByGav.containsKey(getGav(dependency))
 			}
 			Project getProject(Dependency dependency) {
@@ -72,5 +67,9 @@ class MavenShareRootPlugin implements Plugin<Project> {
 				return subModel.project
 			}
 		}
+	}
+
+	protected String getGav(Dependency dependency) {
+		return "$dependency.groupId:$dependency.artifactId:$dependency.version".toString()
 	}
 }

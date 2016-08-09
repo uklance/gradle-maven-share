@@ -40,7 +40,7 @@ public class DependencyShareAction implements ShareAction {
 				// custom DependencyResolver
 				DependencyResolver depResolver = resolveConfig.resolver
 				depNotation = depResolver.resolve(subproject, dep, resolver)
-			} else if (resolver.isProjectDependency(dep)) {
+			} else if (resolver.isProject(dep)) {
 				// local project dependency
 				Project depProject = resolver.getProject(dep)
 				validateProjectDependency(rootModel, dep, depProject)
