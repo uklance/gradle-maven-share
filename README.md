@@ -75,6 +75,10 @@ mavenShare {
 
 ### Custom DependencyResolver
 ```groovy
+
+import com.lazan.gradlemavenshare.*
+import org.apache.maven.model.Dependency
+
 subprojects {
 	apply plugin: 'java'
 	apply plugin: 'com.lazan.gradlemavenshare'
@@ -88,12 +92,15 @@ subprojects {
 	}
 
 	mavenShare {
-		def testJarResolver = { Project containingProject, org.apache.maven.model.Dependency mavenDep, Project dependencyProject ->
-			if (dependencyProject == null) {
-				return [group: mavenDep.groupId, name: mavenDep.artifactId, version: mavenDep.version, classifier: 'tests']
+		def testJarResolver = { Project proj, Dependency dep, ProjectResolver resolver ->
+			if (resolver.isProject(dep)) {
+				// local project dependency
+				String projectPath = resolver.getProject(dep).path
+				return proj.dependencies.project([path: projectPath, configuration: 'testOutput'])
 			}
-			return containingProject.dependencies.project([path: dependencyProject.path, configuration: 'testOutput'])
-		} as com.lazan.gradlemavenshare.DependencyResolver
+			// external dependency
+			return [group: dep.groupId, name: dep.artifactId, version: dep.version, classifier: 'tests']
+		} as DependencyResolver
 		
 		resolve([groupId: 'com.foo', type: 'test-jar'], testJarResolver)
 	}
