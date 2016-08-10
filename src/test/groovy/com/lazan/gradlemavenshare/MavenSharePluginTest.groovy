@@ -309,7 +309,7 @@ class MavenSharePluginTest extends Specification {
 			.buildAndFail()
 
 		then:
-		result.output.contains("type=test-jar not supported for external dependency org.springframework:spring-context:4.3.2.RELEASE")
+		result.output.contains("type='test-jar' not supported for org.springframework:spring-context:4.3.2.RELEASE")
 	}
 
 

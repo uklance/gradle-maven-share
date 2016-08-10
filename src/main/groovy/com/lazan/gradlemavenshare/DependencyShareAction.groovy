@@ -1,23 +1,25 @@
 package com.lazan.gradlemavenshare;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 import org.apache.maven.model.Dependency
-import org.apache.maven.model.Exclusion
-import org.gradle.api.Project
-import org.gradle.api.artifacts.Configuration
-import org.gradle.api.GradleException
+import org.apache.maven.model.Exclusion;
+import org.gradle.api.Project;
+import org.gradle.api.artifacts.Configuration;
 
 public class DependencyShareAction implements ShareAction {
 	@Override
 	public void execute(ResolvedPom pom, Project subproject, ProjectResolver resolver) {
-		MavenShareRootModel rootModel = subproject.rootProject.mavenShareRoot
-		MavenShareModel msm = subproject.mavenShare
-		ConfigurationResolver configResolver = msm.configurationResolver ?: new DefaultConfigurationResolver()
-		for (Dependency dep : pom.dependencies) {
-			String depGav = "${dep.groupId}:${dep.artifactId}:${dep.version}".toString()
+		MavenShareRootModel rootModel = subproject.getRootProject().getExtensions().getByType(MavenShareRootModel.class);
+		MavenShareModel msm = subproject.getExtensions().getByType(MavenShareModel.class);
+		ConfigurationResolver configResolver = msm.getConfigurationResolver();
+		for (Dependency dep : pom.getDependencies()) {
 			if (msm.excludes.find { Map attributes -> dependencyMatches(dep, attributes) }) {
 				continue
 			}
-			Closure depClosure = null
+			Closure depClosure = null;
 			if (dep.exclusions) {
 				depClosure = {
 					for (Exclusion exclusion : dep.exclusions) {
@@ -57,52 +59,53 @@ public class DependencyShareAction implements ShareAction {
 			config.dependencies.add(gradleDep)
 		}
 	}
-
-	protected boolean dependencyMatches(Dependency dep, Map attributes) {
-		if (attributes.groupId != null && attributes.groupId.toString() != dep.groupId) {
-			return false
-		}
-		if (attributes.artifactId != null && attributes.artifactId.toString() != dep.artifactId) {
-			return false
-		}
-		if (attributes.version != null && attributes.version.toString() != dep.version) {
-			return false
-		}
-		if (attributes.scope != null && attributes.scope.toString() != (dep.scope ?: 'compile')) {
-			return false
-		}
-		if (attributes.type != null && attributes.type.toString() != dep.type) {
-			return false
-		}
-		if (attributes.classifier != null && attributes.classifier.toString() != dep.classifier) {
-			return false
-		}
-		return true
+	
+	protected boolean dependencyMatches(Dependency dep, Map<String, String> attributes) {
+		Map<String, String> depMap = [:]
+		if (attributes.containsKey('groupId')) depMap['groupId'] = dep.groupId
+		if (attributes.containsKey('artifactId')) depMap['artifactId'] = dep.artifactId
+		if (attributes.containsKey('version')) depMap['version'] = dep.version
+		if (attributes.containsKey('classifier')) depMap['classifier'] = dep.classifier
+		if (attributes.containsKey('systemPath')) depMap['systemPath'] = dep.systemPath
+		if (attributes.containsKey('type')) depMap['type'] = dep.type ?: 'jar'
+		if (attributes.containsKey('scope')) depMap['scope'] = dep.scope ?: 'compile'
+		return depMap.equals(attributes);
 	}
 	
-	private static final Set<String> INVALID_EXTERNAL_DEPENDENCY_PROPERTIES = ['type', 'systemPath'] as Set
+	private static final String VALIDATE_MSG_TEMPLATE = "%s='%s' not supported for %s. Please exclude the dependency or provide a custom DependencyResolver";
 	
 	protected void validateExternalDependency(MavenShareRootModel rootModel, Dependency dep) {
-		if (!rootModel.allowUnsupportedDependencyProperties) {
-			INVALID_EXTERNAL_DEPENDENCY_PROPERTIES.each { propName ->
-				String propValue = propName == 'type' && dep.type == 'jar' ? null : dep[propName]
-				if (propValue) {
-					throw new GradleException("$propName=$propValue not supported for external dependency $dep.groupId:$dep.artifactId:$dep.version. Either exclude the dependency or provide a custom DependencyResolver")
-				}
+		if (!rootModel.isAllowUnsupportedDependencyProperties()) {
+			String type = "jar".equals(dep.getType()) ? null : dep.getType();
+			if (type != null) {
+				throw new RuntimeException(String.format(VALIDATE_MSG_TEMPLATE, "type", type, createGav(dep)));
+			}
+			if (dep.systemPath != null) {
+				throw new RuntimeException(String.format(VALIDATE_MSG_TEMPLATE, "systemPath", dep.systemPath, createGav(dep)));
 			}
 		}
 	}
 
-	private static final Set<String> INVALID_PROJECT_DEPENDENCY_PROPERTIES = ['type', 'systemPath', 'classifier'] as Set
-
 	protected void validateProjectDependency(MavenShareRootModel rootModel, Dependency dep, Project depProject) {
-		if (!rootModel.allowUnsupportedDependencyProperties) {
-			INVALID_PROJECT_DEPENDENCY_PROPERTIES.each { propName ->
-				String propValue = propName == 'type' && dep.type == 'jar' ? null : dep[propName]
-				if (propValue) {
-					throw new GradleException("$propName=$propValue not supported for local project depdendency $depProject.path. Either exclude the dependency or provide a custom DependencyResolver")
-				}
+		if (!rootModel.isAllowUnsupportedDependencyProperties()) {
+			String type = "jar".equals(dep.getType()) ? null : dep.getType();
+			if (type != null) {
+				throw new RuntimeException(String.format(VALIDATE_MSG_TEMPLATE, "type", type, createGav(dep)));
+			}
+			if (dep.systemPath != null) {
+				throw new RuntimeException(String.format(VALIDATE_MSG_TEMPLATE, "systemPath", dep.systemPath, createGav(dep)));
+			}
+			if (dep.classifier != null) {
+				throw new RuntimeException(String.format(VALIDATE_MSG_TEMPLATE, "classifier", dep.classifier, createGav(dep)));
 			}
 		}
+	}
+	
+	protected String createGav(Dependency dep) {
+		String gav = String.format("%s:%s:%s", dep.getGroupId(), dep.getArtifactId(), dep.getVersion());
+		if (dep.getGroupId() == null || dep.getArtifactId() == null || dep.getVersion() == null) {
+			throw new RuntimeException("Illegal gav " + gav);
+		}
+		return gav;
 	}
 }

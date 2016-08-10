@@ -3,8 +3,8 @@ package com.lazan.gradlemavenshare
 class MavenShareModel {
 	private static final Set<String> ATTRIBUTE_NAMES = ['groupId', 'artifactId', 'version', 'type', 'scope', 'classifier', 'systemPath'] as Set
 	
-	Object pomFile
-	ConfigurationResolver configurationResolver
+	Object pomFile = 'pom.xml'
+	ConfigurationResolver configurationResolver = new DefaultConfigurationResolver()
 	List<ShareAction> shareActions = [new DependencyShareAction()]
 	List<Map> excludes = []
 	List<Map> resolvers = []
