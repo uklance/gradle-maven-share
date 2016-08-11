@@ -377,4 +377,47 @@ class MavenSharePluginTest extends Specification {
 		"""
 		writeFile(path, script)
 	}
+	
+	def "Custom dependency resolvers are applied"() {
+		given:
+		writePom("pom.xml", "project1", """
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-context</artifactId>
+				<version>4.3.2.RELEASE</version>
+			</dependency>
+			<dependency>
+			    <groupId>junit</groupId>
+			    <artifactId>junit</artifactId>
+			    <version>4.11</version>
+				<scope>test</scope>
+			</dependency>"""
+		)
+		writeGradleSingle("build.gradle", """
+			def resolver1 = { proj, dep, resolver ->
+				return 'org.springframework:spring-context:4.3.1.RELEASE'
+			} as com.lazan.gradlemavenshare.DependencyResolver
+
+			def resolver2 = { proj, dep, resolver ->
+				return 'junit:junit:4.10'
+			} as com.lazan.gradlemavenshare.DependencyResolver
+
+			mavenShare {
+				resolve([artifactId: 'spring-context'], resolver1)
+				resolve([version: '4.11'], resolver2)
+			}"""
+		)
+
+		when:
+		def result = GradleRunner.create()
+			.withProjectDir(testProjectDir.root)
+			.withArguments('dependencies', '--stacktrace')
+			.build()
+
+		then:
+		result.task(":dependencies").outcome == TaskOutcome.SUCCESS
+		result.output.contains("org.springframework:spring-context:4.3.1.RELEASE")
+		result.output.contains("junit:junit:4.10")
+	}
+
 }
