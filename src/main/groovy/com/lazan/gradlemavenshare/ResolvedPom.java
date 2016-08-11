@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -14,6 +13,15 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Exclusion;
 import org.apache.maven.model.Model;
 
+/**
+ * Resolved maven model including
+ * <ul>
+ * <li>Linkage to the parent</li>
+ * <li>Dependency management applied to dependencies</li>
+ * <li>Property placeholders resolved with actual property values</li>
+ * <li>GroupId and Version inherited from parent hierarchy if not explicitly provided</li>
+ * </ul> 
+ */
 public class ResolvedPom {
 	private final File pomFile;
 	private final ResolvedPom parent;
@@ -68,7 +76,7 @@ public class ResolvedPom {
 		return Collections.unmodifiableList(dependencies);
 	}
 	
-	public Dependency resolve(Dependency rawDep) {
+	protected Dependency resolve(Dependency rawDep) {
 		Dependency dep = new Dependency();
 		dep.setGroupId(substituteProperties(rawDep.getGroupId()));
 		dep.setArtifactId(substituteProperties(rawDep.getArtifactId()));
@@ -136,6 +144,7 @@ public class ResolvedPom {
 	public String substituteProperties(String value) {
 		return substituteProperties(properties, value);
 	}
+	
 	protected String substituteProperties(Map<String, String> properties, String value) {
 		if (value == null) return null;
 		
@@ -206,9 +215,7 @@ public class ResolvedPom {
 		return properties.get(name);
 	}
 	
-	public Set<String> getPropertynames() {
-		return properties.keySet();
+	public Map<String, String> getProperties() {
+		return properties;
 	}
-	
-	
 }

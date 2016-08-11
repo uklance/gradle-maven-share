@@ -416,7 +416,9 @@ class MavenSharePluginTest extends Specification {
 
 		then:
 		result.task(":dependencies").outcome == TaskOutcome.SUCCESS
+		!result.output.contains("org.springframework:spring-context:4.3.2.RELEASE")
 		result.output.contains("org.springframework:spring-context:4.3.1.RELEASE")
+		!result.output.contains("junit:junit:4.11")
 		result.output.contains("junit:junit:4.10")
 	}
 
