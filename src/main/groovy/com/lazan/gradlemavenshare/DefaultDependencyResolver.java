@@ -14,7 +14,7 @@ public class DefaultDependencyResolver implements DependencyResolver {
 			// local project dependency
 			Project depProject = resolver.getProject(dep);
 			validateProjectDependency(rootModel, dep, depProject);
-			return project.project(depProject.getPath());
+			return depProject;
 		} else {
 			// external dependency
 			validateExternalDependency(rootModel, dep);
@@ -38,8 +38,7 @@ public class DefaultDependencyResolver implements DependencyResolver {
 				throw new RuntimeException(String.format(VALIDATE_MSG_TEMPLATE, "type", type, createGav(dep)));
 			}
 			if (dep.getSystemPath() != null) {
-				throw new RuntimeException(
-						String.format(VALIDATE_MSG_TEMPLATE, "systemPath", dep.getSystemPath(), createGav(dep)));
+				throw new RuntimeException(String.format(VALIDATE_MSG_TEMPLATE, "systemPath", dep.getSystemPath(), createGav(dep)));
 			}
 		}
 	}
@@ -51,12 +50,10 @@ public class DefaultDependencyResolver implements DependencyResolver {
 				throw new RuntimeException(String.format(VALIDATE_MSG_TEMPLATE, "type", type, createGav(dep)));
 			}
 			if (dep.getSystemPath() != null) {
-				throw new RuntimeException(
-						String.format(VALIDATE_MSG_TEMPLATE, "systemPath", dep.getSystemPath(), createGav(dep)));
+				throw new RuntimeException(String.format(VALIDATE_MSG_TEMPLATE, "systemPath", dep.getSystemPath(), createGav(dep)));
 			}
 			if (dep.getClassifier() != null) {
-				throw new RuntimeException(
-						String.format(VALIDATE_MSG_TEMPLATE, "classifier", dep.getClassifier(), createGav(dep)));
+				throw new RuntimeException(String.format(VALIDATE_MSG_TEMPLATE, "classifier", dep.getClassifier(), createGav(dep)));
 			}
 		}
 	}
