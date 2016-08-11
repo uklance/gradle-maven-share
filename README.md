@@ -33,7 +33,7 @@ subprojects {
 	}
 }
 ```
-See [ResolvedPom](https://github.com/uklance/gradle-maven-share/blob/master/src/main/groovy/com/lazan/gradlemavenshare/ResolvedPom.java) and [ProjectResolver](https://github.com/uklance/gradle-maven-share/blob/master/src/main/groovy/com/lazan/gradlemavenshare/ProjectResolver.java)
+See [ShareAction](https://github.com/uklance/gradle-maven-share/blob/master/src/main/groovy/com/lazan/gradlemavenshare/ShareAction.java), [ResolvedPom](https://github.com/uklance/gradle-maven-share/blob/master/src/main/groovy/com/lazan/gradlemavenshare/ResolvedPom.java) and [ProjectResolver](https://github.com/uklance/gradle-maven-share/blob/master/src/main/groovy/com/lazan/gradlemavenshare/ProjectResolver.java)
 
 ### Excluding maven dependencies
 You may not wish to share all maven dependencies with gradle, dependencies can be excluded via any maven dependency attributes (groupId, artifactId, version, classifier, type)
